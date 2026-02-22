@@ -69,7 +69,7 @@ struct TrackReplayValidatorTests {
         let track = await Track(points: points, startDate: .now)
 
         // Initialize validator
-        let validator = TrackReplayValidator(replayingTrack: track)
+        let validator = TrackReplayValidator(replayingTrack: track, checkPointInterval: 50)
 
         // Create a parallel path offset ~15m to the north for each point
         let offsetMeters: Double = 15

@@ -97,7 +97,9 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
     /// - Assigned an explicit id `"stopbutton"` for SwiftUI identity during transitions.
     private var stopBigButton: some View {
         Button {
-            try? self.vm.stopTrack()
+            Task {
+                try? await self.vm.stopTrack()
+            }
         } label: {
             Text("Stop")
                 .font(.title)

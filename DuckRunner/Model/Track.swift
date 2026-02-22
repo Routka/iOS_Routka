@@ -8,7 +8,6 @@ import Foundation
 import CoreLocation
 import CoreData
 
-
 /// Represents a recorded track consisting of multiple location points and timing information.
 struct Track: Codable {
     /// Unique identifier for the track.
@@ -21,6 +20,13 @@ struct Track: Codable {
     var stopDate: Date?
     /// id of a parent track
     var parentID: String?
+    
+    /// Type of a track, which results in determining way of replay logic
+    var type: TrackType = .classical
+    
+    mutating func changeType(to newType: TrackType) {
+        self.type = newType
+    }
     
     /// Initializes a new Track with provided points and time range.
     init(id: String = UUID().uuidString,

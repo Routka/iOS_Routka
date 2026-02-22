@@ -110,6 +110,7 @@ final class TrackRepository: TrackStorageProtocol {
                         item.stopDate = track.stopDate
                         item.startDate = track.startDate
                         item.parentID = track.parentID
+                        item.type = track.type.rawValue
                         if context.hasChanges {
                             try context.save()
                             self.sendAction(.updated(track))

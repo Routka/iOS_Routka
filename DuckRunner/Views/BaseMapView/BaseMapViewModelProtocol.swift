@@ -28,6 +28,6 @@ protocol BaseMapViewModelProtocol: ObservableObject, TrackControllerProtocol {
     /// Begins a new track recording session.
     func startTrack()
     /// Ends the current track recording session, throwing if there is no active track.
-    func stopTrack() throws
+    func stopTrack() async throws
 }
 

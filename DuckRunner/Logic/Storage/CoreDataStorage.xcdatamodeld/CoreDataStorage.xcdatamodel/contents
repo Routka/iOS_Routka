@@ -5,6 +5,7 @@
         <attribute name="parentID" optional="YES" attributeType="String"/>
         <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="792937740" usesScalarValueType="NO"/>
         <attribute name="stopDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
         <relationship name="points" toMany="YES" deletionRule="Nullify" destinationEntity="TrackPointDTO"/>
     </entity>
     <entity name="TrackPointDTO" representedClassName="TrackPointDTO" syncable="YES" codeGenerationType="class">

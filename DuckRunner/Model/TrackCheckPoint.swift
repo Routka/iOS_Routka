@@ -30,10 +30,16 @@ struct TrackCheckPoint: Equatable {
     }
     
     nonisolated
-    func isPointInCheckpoint(_ location: CLLocationCoordinate2D) -> Bool {
+    func isPointInCheckpoint(_ location: CLLocationCoordinate2D, printA: Bool = false) -> Bool {
         let receivedLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
         let distanceToCheckpoint = receivedLocation.distance(from: checkpointLocation)
         let passed = distanceToCheckpoint < distanceThreshold
+        
+        
+        
+        if printA{
+            print("VM: Checked checkpointDistance \(distanceToCheckpoint)")
+        }
         return passed
     }
     

@@ -18,7 +18,7 @@ import Combine
 /// for presentation in the TrackDetailView.
 final class TrackDetailViewModel: ObservableObject {
     /// The track instance whose details are displayed.
-    let track: Track
+    private(set) var track: Track
     private let storageService: any TrackStorageProtocol
     
     /// Average speed of CLLocationSpeed
@@ -45,6 +45,11 @@ final class TrackDetailViewModel: ObservableObject {
                 }
             }
         }
+    }
+    
+    func updateTrackType(to type: TrackType) async {
+        self.track.type = type
+        try? await storageService.updateTrack(track)
     }
     
     func calculateAverageSpeed() {
@@ -95,7 +100,7 @@ struct TrackDetailView: View {
         self._vm = .init(wrappedValue: .init(track: track, dependencies: dependencies))
         self.dependencies = dependencies
     }
-
+    @State private var mode: TrackType = .classical
     var body: some View {
         List {
             Section (header: Text("Track Details")){
@@ -105,6 +110,18 @@ struct TrackDetailView: View {
                 topSpeed
             }
             Section("Control") {
+                Picker("Mode", selection: .init(get: {
+                    vm.track.type
+                }, set: { new in
+                    Task {
+                        await vm.updateTrackType(to: new)
+                    }
+                })) {
+                    ForEach([TrackType.classical, .speedtrap], id: \.rawValue) { type in
+                        Text(type.rawValue)
+                            .tag(type)
+                    }
+                }
                 Button("Replay Track") {
                     Task {
                         await dependencies.trackReplayCoordinator.selectTrackToReplay(vm.track)
@@ -213,6 +230,6 @@ private actor TestCache: TrackMapSnippetCacheProtocol {
 
 #Preview {
     NavigationView {
-        TrackDetailView(track: .filledTrack, dependencies: .production)
+        TrackDetailView(track: .filledTrack, dependencies: .mock())
     }
 }

@@ -40,3 +40,18 @@ extension CLLocationCoordinate2D: @retroactive nonisolated Hashable {
         hasher.combine(latitude)
     }
 }
+
+
+extension CLLocationCoordinate2D {
+    public mutating func offsettingToNorth(by meters: CLLocationDistance) {
+        // Length in km of 1° of latitude = always 111.32 km
+        let deltaLat = meters / 111_132.0
+        self.latitude += deltaLat
+    }
+    
+    public func offsetToNorth(by meters: CLLocationDistance) -> Self {
+        // Length in km of 1° of latitude = always 111.32 km
+        let deltaLat = meters / 111_132.0
+        return CLLocationCoordinate2D(latitude: self.latitude + deltaLat, longitude: self.longitude)
+    }
+}

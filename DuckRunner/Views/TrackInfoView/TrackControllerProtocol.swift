@@ -10,5 +10,5 @@ import Foundation
 protocol TrackControllerProtocol: ObservableObject {
     var currentTrack: Track? { get }
     func startTrack()
-    func stopTrack() throws
+    func stopTrack() async throws
 }

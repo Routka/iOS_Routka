@@ -25,6 +25,12 @@ extension Track {
         self.stopDate = track.stopDate
         self.id = track.id ?? UUID().uuidString
         self.parentID = track.parentID
+        if let type = track.type,
+           let typeEnum = TrackType(rawValue: type) {
+            self.type = typeEnum
+        } else {
+            self.type = .classical
+        }
     }
 }
 
@@ -50,6 +56,7 @@ extension TrackDTO {
         self.stopDate = track.stopDate
         self.points = NSSet(array: track.points.map({TrackPointDTO(context: context, $0)}))
         self.parentID = track.parentID
+        self.type = track.type.rawValue
     }
 }
 
