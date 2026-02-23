@@ -40,7 +40,7 @@ struct Track: Codable {
 }
 
 /// Represents a single recorded point on a track, including location, speed, and timestamp.
-struct TrackPoint: Codable {
+struct TrackPoint: Codable, Equatable {
     /// The geographic coordinate for this track point.
     let position: CLLocationCoordinate2D
     /// The speed measured at this point.

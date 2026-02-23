@@ -78,13 +78,13 @@ struct TrackingMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
-        return
         // Helper for overlays (value equality)
         func overlaysEqual(_ lhs: MKOverlay, _ rhs: MKOverlay) -> Bool {
-            return lhs.boundingMapRect.origin.x == rhs.boundingMapRect.origin.x &&
-                   lhs.boundingMapRect.origin.y == rhs.boundingMapRect.origin.y &&
-                   lhs.boundingMapRect.size.width == rhs.boundingMapRect.size.width &&
-                   lhs.boundingMapRect.size.height == rhs.boundingMapRect.size.height
+            return false
+//            lhs.boundingMapRect.origin.x == rhs.boundingMapRect.origin.x &&
+//                   lhs.boundingMapRect.origin.y == rhs.boundingMapRect.origin.y &&
+//                   lhs.boundingMapRect.size.width == rhs.boundingMapRect.size.width &&
+//                   lhs.boundingMapRect.size.height == rhs.boundingMapRect.size.height
         }
         // Helper for markers (value equality)
         func markersEqual(_ lhs: MKAnnotation, _ rhs: MKAnnotation) -> Bool {
