@@ -46,25 +46,29 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
                 }
             }
             .overlay(alignment: .bottom, content: {
-                VStack {
+                VStack(alignment: .trailing) {
+                    if vm.replayTrack != nil {
+                        Button {
+                            vm.deselectReplay()
+                        } label: {
+                            Text("Stop Replay")
+                                .bold()
+                                .foregroundStyle(Color.primary)
+                                .padding(8)
+                        }
+                        .glassEffect(.regular.tint(.accentColor.opacity(0.5)).interactive(), in: Capsule())
+                        .transition(.opacity)
+                    }
                     if let track = vm.currentTrack {
                         TrackLiveInfoView(track: track, unit: unitSpeed)
                     }
-                    HStack {
                         TrackControlButton(vm: vm)
                             .disabled(vm.isTrackControlAvailable == false)
                             .opacity(vm.isTrackControlAvailable ? 1 : 0.6)
-                        if vm.currentTrack?.stopDate != nil {
-                            Button {
-                                vm.currentTrack = nil
-                            } label: {
-                                Text("Clear")
-                            }
-
-                        }
-                    }
+                       
                 }
                 .padding(10)
+                .animation(.default, value: vm.replayTrack != nil)
                 
             })
             .animation(.bouncy, value: vm.currentSpeed != nil)
@@ -73,6 +77,9 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
 
 import Combine
 private final class PreviewModel: BaseMapViewModelProtocol {
+    func deselectReplay() {
+    }
+    
     var mapMode: TrackingMapView.MapViewMode = .bounds(.filledTrack)
     
     var checkpoints: [TrackCheckPoint] = {
@@ -89,7 +96,7 @@ private final class PreviewModel: BaseMapViewModelProtocol {
     
     var replayTrack: Track? = .filledTrack
     
-    @Published var currentTrack: Track?
+    @Published var currentTrack: Track? = .filledTrack
     
     @Published var currentSpeed: CLLocationSpeed? = 0
     

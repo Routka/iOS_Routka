@@ -81,7 +81,7 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
             Text("Start")
                 .font(.title)
                 .bold()
-                .foregroundStyle(Color.primary.opacity(0.7))
+                .foregroundStyle(Color.primary)
                 .padding(8)
                 .frame(maxWidth: .infinity)
         }
@@ -104,7 +104,7 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
             Text("Stop")
                 .font(.title)
                 .bold()
-                .foregroundStyle(Color.primary.opacity(0.7))
+                .foregroundStyle(Color.primary)
                 .padding(8)
                 .frame(maxWidth: .infinity)
         }

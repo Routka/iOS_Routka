@@ -41,6 +41,10 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         try? await self.storageService.addTrack(track)
     }
     
+    func deselectReplay() {
+        self.receiveReplayTrackAction(.deselect)
+    }
+    
     // MARK: - Dependencies
     let trackService: any LiveTrackServiceProtocol
     let locationService: any LocationServiceProtocol
@@ -158,6 +162,7 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
             self.isTrackControlAvailable = true
             self.stopReplayCheckpoint = nil
             self.startReplayCheckpoint = nil
+            self.checkpoints = []
         }
     }
     
