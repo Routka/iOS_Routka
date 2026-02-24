@@ -10,7 +10,7 @@ import MapKit
 import SwiftUI
 
 /// Bridge overlay to show line of a track on a map
-final class ReplayTrackOverlay: NSObject, MKOverlay {
+final class ReplayTrackOverlay: NSObject, TrackOverlayProtocol {
 
     let points: [MKMapPoint]
     let boundingMapRect: MKMapRect

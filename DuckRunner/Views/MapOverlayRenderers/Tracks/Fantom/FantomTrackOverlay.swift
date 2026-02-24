@@ -10,7 +10,7 @@ import MapKit
 import SwiftUI
 
 /// Bridge overlay to show line of a track for editing view, showing how original track looked like on a map
-final class FantomTrackOverlay: NSObject, MKOverlay {
+final class FantomTrackOverlay: NSObject, TrackOverlayProtocol {
 
     let points: [MKMapPoint]
     let boundingMapRect: MKMapRect

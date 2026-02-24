@@ -8,7 +8,7 @@ import MapKit
 import SwiftUI
 
 /// Bridge overlay to show line of a track on a map
-final class SpeedTrackOverlay: NSObject, MKOverlay {
+final class SpeedTrackOverlay: NSObject, TrackOverlayProtocol {
 
     let points: [MKMapPoint]
     let speeds: [CLLocationSpeed]

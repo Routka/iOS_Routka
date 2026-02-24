@@ -96,11 +96,12 @@ struct TrackingMapView: UIViewRepresentable {
     func updateUIView(_ mapView: MKMapView, context: Context) {
         // Helper for overlays (value equality)
         func overlaysEqual(_ lhs: MKOverlay, _ rhs: MKOverlay) -> Bool {
+            if let lhs = lhs as? any TrackOverlayProtocol,
+               let rhs = rhs as? (any TrackOverlayProtocol) {
+                return lhs.points == rhs.points
+            }
+            // by default we redraw the overlay
             return false
-//            lhs.boundingMapRect.origin.x == rhs.boundingMapRect.origin.x &&
-//                   lhs.boundingMapRect.origin.y == rhs.boundingMapRect.origin.y &&
-//                   lhs.boundingMapRect.size.width == rhs.boundingMapRect.size.width &&
-//                   lhs.boundingMapRect.size.height == rhs.boundingMapRect.size.height
         }
         // Helper for markers (value equality)
         func markersEqual(_ lhs: MKAnnotation, _ rhs: MKAnnotation) -> Bool {
