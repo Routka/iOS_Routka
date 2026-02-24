@@ -14,6 +14,7 @@ protocol CacheFileManagerProtocol: Actor {
     func contents(atPath path: String) -> Data?
     func createFile(atPath path: String, contents data: Data?, attributes attr: [Data.WritingOptions]?)
     func removeItem(atPath path: String)
+    func fileNames(atPath path: String, containing substring: String) -> [String]
 }
 
 
@@ -64,12 +65,26 @@ final actor CacheFileManager: CacheFileManagerProtocol {
     func removeItem(atPath path: String) {
         try? fileManager.removeItem(atPath: path)
     }
+
+    func fileNames(atPath path: String, containing substring: String) -> [String] {
+        do {
+            let names = try fileManager.contentsOfDirectory(atPath: path)
+            if substring.isEmpty {
+                return names
+            }
+            return names.filter { $0.contains(substring) }
+        } catch {
+            print("Failed to list directory at \(path): \(error)")
+            return []
+        }
+    }
 }
 
 
 protocol TrackMapSnippetCacheProtocol {
     func getSnippet(for track: Track, size: CGSize) async -> UIImage?
     func cacheSnippet(_ snippet: UIImage, for track: Track, size: CGSize) async
+    func invalidateCache(for trackID: String) async
 }
 
 actor TrackMapSnippetCache: TrackMapSnippetCacheProtocol {
@@ -81,6 +96,12 @@ actor TrackMapSnippetCache: TrackMapSnippetCacheProtocol {
     
     private func path(for trackID: String, size: CGSize) -> String {
         return (NSTemporaryDirectory() as NSString).appendingPathComponent("trackmapcache-\(trackID)-\(size.width)-\(size.height).png")
+    }
+    
+    func invalidateCache(for trackID: String) async {
+        for image in await fileManager.fileNames(atPath: NSTemporaryDirectory(), containing: "trackmapcache-\(trackID)") {
+            await fileManager.removeItem(atPath: (NSTemporaryDirectory() as NSString).appendingPathComponent(image))
+        }
     }
     
     func getSnippet(for track: Track, size: CGSize) async -> UIImage? {

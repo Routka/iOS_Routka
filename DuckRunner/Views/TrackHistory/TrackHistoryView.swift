@@ -92,20 +92,11 @@ fileprivate final class PreviewModel: TrackHistoryViewModelProtocol {
     
 }
 
-private actor TestCache: TrackMapSnippetCacheProtocol {
-    func getSnippet(for track: Track, size: CGSize) async -> UIImage? {
-        return nil
-    }
-    
-    func cacheSnippet(_ snippet: UIImage, for track: Track, size: CGSize) async {
-    }
-}
-
 
 
 
 #Preview {
     TrackHistoryView(vm: PreviewModel(),
-                     dependencies: .production()
+                     dependencies: .mock()
     )
 }

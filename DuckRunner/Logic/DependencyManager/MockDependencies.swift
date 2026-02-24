@@ -86,6 +86,10 @@ extension DependencyManager {
     }
     
     final actor MockCacheFileManager: CacheFileManagerProtocol {
+        func fileNames(atPath path: String, containing substring: String) -> [String] {
+            return []
+        }
+        
         func fileExists(atPath path: String) -> Bool {
             return false
         }
@@ -123,6 +127,9 @@ extension DependencyManager {
     }
     
     final class MockTrackMapSnippetCache: TrackMapSnippetCacheProtocol {
+        func invalidateCache(for trackID: String) async {
+        }
+        
         func getSnippet(for track: Track, size: CGSize) async -> UIImage? {
             return nil
         }

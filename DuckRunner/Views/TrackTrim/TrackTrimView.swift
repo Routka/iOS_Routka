@@ -90,6 +90,7 @@ struct TrackTrimView: View {
                                     try await dependencies.storageService.updateTrack(track)
                                     dependencies.routers[dependencies.tabRouter.selectedTab]?
                                         .pop()
+                                    await dependencies.mapSnippetCache.invalidateCache(for: track.id)
                                 } catch {
                                     print("Failed saving track", error)
                                 }

@@ -282,14 +282,6 @@ struct TrackDetailView: View {
     }
 }
 
-private actor TestCache: TrackMapSnippetCacheProtocol {
-    func getSnippet(for track: Track, size: CGSize) async -> UIImage? {
-        return nil
-    }
-    
-    func cacheSnippet(_ snippet: UIImage, for track: Track, size: CGSize) async {
-    }
-}
 
 
 #Preview {
