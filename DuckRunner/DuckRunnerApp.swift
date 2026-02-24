@@ -44,7 +44,7 @@ struct DuckRunnerApp: App {
                 }
                 .tag("Settings")
             }
-            
+            .disclaimerOnce()
         }
     }
 }
