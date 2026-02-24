@@ -15,7 +15,7 @@ struct Track: Codable, Hashable {
     /// The sequence of recorded location points that form this track.
     var points: [TrackPoint]
     /// The starting date and time of the track.
-    let startDate: Date
+    var startDate: Date
     /// The end date and time of the track, if stopped.
     var stopDate: Date?
     /// id of a parent track

@@ -45,7 +45,7 @@ struct TrackHistoryView<ViewModel: TrackHistoryViewModelProtocol>: View {
                                 .opacity(0.6)
                                 .transition(.opacity)
                         }
-                        ForEach(vm.tracks, id: \.startDate) { track in
+                        ForEach(vm.tracks, id: \.id) { track in
                             Button {
                                 dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
                                     .trackDetail(track: track, dependencies: dependencies))

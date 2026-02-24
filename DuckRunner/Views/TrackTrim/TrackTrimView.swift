@@ -82,29 +82,60 @@ struct TrackTrimView: View {
                 VStack {
                     if track.points.count !=
                         trimmedTrack.count {
-                        Button {
-                            Task {
-                                var track = self.track
-                                track.points = trimmedTrack
-                                do {
-                                    try await dependencies.storageService.updateTrack(track)
-                                    dependencies.routers[dependencies.tabRouter.selectedTab]?
-                                        .pop()
-                                    await dependencies.mapSnippetCache.invalidateCache(for: track.id)
-                                } catch {
-                                    print("Failed saving track", error)
+                        HStack {
+                            Button {
+                                Task {
+                                    var track = self.track
+                                    track.points = trimmedTrack
+                                    track.startDate = trimmedTrack.first?.date ?? Date()
+                                    track.stopDate = trimmedTrack.last?.date
+                                    do {
+                                        try await dependencies.storageService.updateTrack(track)
+                                        dependencies.routers[dependencies.tabRouter.selectedTab]?
+                                            .pop()
+                                        await dependencies.mapSnippetCache.invalidateCache(for: track.id)
+                                    } catch {
+                                        print("Failed saving track", error)
+                                    }
                                 }
+                            } label: {
+                                Text("Save")
+                                    .font(.title)
+                                    .bold()
+                                    .foregroundStyle(Color.primary)
+                                    .padding(8)
+                                    .frame(maxWidth: .infinity)
                             }
-                        } label: {
-                            Text("Save")
-                                .font(.title)
-                                .bold()
-                                .foregroundStyle(Color.primary.opacity(0.7))
-                                .padding(8)
-                                .frame(maxWidth: .infinity)
+                            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
+                            .transition(.opacity)
+                            Button {
+                                Task {
+                                    let NewTrack = Track(id: UUID().uuidString,
+                                                      points: trimmedTrack,
+                                                      startDate: trimmedTrack.first?.date ?? Date(),
+                                                      stopDate: trimmedTrack.last?.date,
+                                                      parentID: nil)
+                                    do {
+                                        try await dependencies.storageService.addTrack(NewTrack)
+                                        let router = dependencies.routers[dependencies.tabRouter.selectedTab]
+                                        router?.popToRoot()
+                                        try? await Task.sleep(for: .seconds(0.5))
+                                        router?.push(.trackDetail(track: NewTrack, dependencies: dependencies))
+                                    } catch {
+                                        print("Failed saving track", error)
+                                    }
+                                }
+                            } label: {
+                                Text("Save As New")
+                                    .font(.title)
+                                    .bold()
+                                    .foregroundStyle(Color.primary)
+                                    .padding(8)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
+                            .transition(.opacity)
                         }
-                        .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
-                        .transition(.opacity)
                     }
                     TrackTrimSlider(points: track.points, start: $start, stop: $stop)
                         .padding()
