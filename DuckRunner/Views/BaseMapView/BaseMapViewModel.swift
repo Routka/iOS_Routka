@@ -66,7 +66,10 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         
         
         await self.checkIfInReplayCheckpoint(location)
-        await self.replayValidator?.passedPoint(trackPoint)
+        // if we haven't recording the track, we dont try to validate the replay
+        if currentTrack != nil {
+            await self.replayValidator?.passedPoint(trackPoint)
+        }
         guard var checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
             .sorted(by: {$0.point.date < $1.point.date}) else { return }
         if let start = self.startReplayCheckpoint {
@@ -76,6 +79,7 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         await MainActor.run {
             self.checkpoints = lockedCheckpoints
         }
+        
     }
     
     /// Reacting if we are in stop or start checkpoints

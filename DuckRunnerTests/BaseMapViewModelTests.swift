@@ -456,6 +456,39 @@ struct BaseMapViewModelTests {
         await vm.receivedLocationUpdate(stopLocation)
         #expect(trackService.stopedTrack)
     }
+    
+    @Test("Replaying track with checkpoints when track not started should not pass checkpoints")
+    func testNonStartedTrackIgnoresCheckpoints() async throws {
+        let trackService = TrackStartDetectMock()
+        let vm = await BaseMapViewModel(dependencies: .mock(trackService: trackService))
+        
+        var track = await Track.filledTrack
+        await track.changeType(to: .speedtrap)
+        await #expect(track.type == .speedtrap)
+        
+        await vm.receiveReplayTrackAction(.select(track))
+        let receivedTrack = await vm.replayTrack
+        #expect(track.id == receivedTrack?.id)
+        
+        #expect(!trackService.startedTrack)
+        
+        await #expect(vm.replayValidator?.checkpoints.isEmpty == false)
+        
+        let randomCheckpoint = try await #require(vm.replayValidator?.checkpoints.first?.value)
+        let checkpointLocation = await CLLocation(coordinate: randomCheckpoint.point.position,
+                                      altitude: 0,
+                                      horizontalAccuracy: 1,
+                                      verticalAccuracy: 1,
+                                      course: 0,
+                                      speed: 20,
+                                      timestamp: .now)
+        
+        await vm.receivedLocationUpdate(checkpointLocation)
+        
+        #expect(!trackService.startedTrack)
+        
+        await #expect(vm.replayValidator?.checkpoints.contains(where: {$0.value.checkPointPassed == true}) == false)
+    }
      
 }
 
