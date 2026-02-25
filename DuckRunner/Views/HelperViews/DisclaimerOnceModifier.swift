@@ -44,7 +44,7 @@ struct DisclaimerOnceModifier: ViewModifier {
                         if progress >= 1 { isButtonEnabled = true }
                     }
                 }
-                try? await Task.sleep(nanoseconds: 50_000_000) // 50ms tick
+                try? await Task.sleep(nanoseconds: 10_000_000) // 10ms tick
             }
         }
     }
@@ -66,35 +66,47 @@ struct DisclaimerOnceModifier: ViewModifier {
                     ZStack {
                         Color.black.opacity(0.4)
                             .ignoresSafeArea()
-                        VStack(spacing: 30) {
-                            Text("Disclaimer")
+                        VStack() {
+                            Text("Safety Warning")
                                 .font(.largeTitle)
                                 .bold()
-                                .opacity(0.8)
-                            ScrollView {
-                                Text("""
-                                     Safety Warning
-                                     
-                                     By accessing or using this application, you represent, acknowledge, and agree that you are solely responsible for operating your vehicle safely and in full compliance with all applicable traffic laws and regulations.
+                                .foregroundStyle(Color.white)
+                                .shadow(radius: 5)
+                                .multilineTextAlignment(.center)
+//                                .opacity(0.8)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .glassEffect(.clear.tint(Color.black.opacity(0.4)),
+                                             in: RoundedRectangle(cornerRadius: 16))
+                            VStack {
+                                ScrollView {
+                                    Text("""
+                                         By accessing or using this application, you represent, acknowledge, and agree that you are solely responsible for operating your vehicle safely and in full compliance with all applicable traffic laws and regulations.
 
-                                     Do not use your mobile device while the vehicle is in motion.
-                                     Always obey posted speed limits.
-                                     Avoid aggressive or reckless maneuvers.
+                                         Do not use your mobile device while the vehicle is in motion.
+                                         Always obey posted speed limits.
+                                         Avoid aggressive or reckless maneuvers.
 
-                                     Failure to comply with traffic laws may result in serious injury, death, or legal consequences.
+                                         Failure to comply with traffic laws may result in serious injury, death, or legal consequences.
 
-                                     If you wish to engage in high-speed or competitive driving, please do so only at authorized racing facilities.
-                                     """)
-                                    .multilineTextAlignment(.center)
-                                    .font(.body)
-                                    .padding(.horizontal)
+                                         If you wish to engage in high-speed or competitive driving, please do so only at authorized racing facilities.
+                                         """)
+                                        .multilineTextAlignment(.center)
+                                        .font(.headline)
+                                        .padding(.horizontal)
+                                        .foregroundStyle(Color.white)
+                                }
+                                .scrollIndicators(.hidden)
+                                .scrollBounceBehavior(.basedOnSize)
+                                understoodButton
                             }
-                            .scrollIndicators(.hidden)
-                            .scrollBounceBehavior(.basedOnSize)
-                            understoodButton
+                            .padding()
+                            .glassEffect(.clear
+                                .tint(Color.black.opacity(0.4)),
+                                         in: RoundedRectangle(cornerRadius: 16))
                         }
-                        .padding()
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+                        
+                        
                         .padding()
                     }
                     .transition(.opacity)
@@ -114,7 +126,7 @@ struct DisclaimerOnceModifier: ViewModifier {
         } label: {
             VStack(spacing: 1) {
                 Text("Understood")
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Color.white)
                     .font(.title)
                     .frame(maxWidth: .infinity)
                 if !isButtonEnabled {
@@ -126,10 +138,12 @@ struct DisclaimerOnceModifier: ViewModifier {
                 }
             }
             .padding()
-            .glassEffect(.regular.tint(isButtonEnabled ?
-                                       Color.green.opacity(0.3) :
-                                        Color.gray.opacity(0.3)
-            ),
+            .glassEffect(.regular
+                .interactive()
+                .tint(isButtonEnabled ?
+                      Color.green.opacity(0.5) :
+                        Color.gray.opacity(0.3)
+                     ),
                          in: Capsule())
                 
         }
@@ -149,9 +163,10 @@ extension View {
     }
 }
 
-
+import MapKit
 #Preview {
-    Color.blue
+    Map()
+        .ignoresSafeArea()
         .disclaimerOnce(disclaimerShown: false)
 }
 
