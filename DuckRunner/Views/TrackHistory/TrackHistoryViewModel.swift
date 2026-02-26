@@ -42,6 +42,7 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
                     await MainActor.run {
                         withAnimation {
                             self.tracks = tracks
+                            self.tracks.append(.filledTrack)
                         }
                     }
                 }

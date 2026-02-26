@@ -77,7 +77,6 @@ struct TrackTrimView: View {
             MapContents.fantomTrack(track)
             MapContents.speedTrack(trimmedTrack)
         }
-        .ignoresSafeArea()
             .overlay(alignment: .bottom) {
                 VStack {
                     if track.points.count !=

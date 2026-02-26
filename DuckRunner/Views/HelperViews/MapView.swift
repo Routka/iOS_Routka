@@ -56,6 +56,7 @@ struct MapView<Content: MapContent>: View {
         self._vm = .init(initialValue: .init(mode: mode))
     }
     
+    
     var body: some View {
         VStack {
             Map(position: $vm.mapPosition,
@@ -65,10 +66,22 @@ struct MapView<Content: MapContent>: View {
             .onMapCameraChange(frequency: .continuous) { context in
                 self.vm.cameraPosition = context.region.center
             }
-            .mapControlVisibility(.hidden)
-            .overlay(alignment: .topTrailing) {
+//            .mapControlVisibility(.hidden)
+            .mapControls({
+                MapCompass()
+                    
+            })
+            .safeAreaInset(edge: .top) {
                 followButton
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.horizontal)
+                    .padding(.top)
             }
+            
+//            .mapControlVisibility(.)
+//            .overlay(alignment: .topTrailing) {
+//                followButton
+//            }
         }
     }
     
@@ -85,11 +98,11 @@ struct MapView<Content: MapContent>: View {
                 Image(systemName: tracking ? "location.north.line" : "location.north.line.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 20)
+                    
                     .padding()
                     .glassEffect(.regular, in: Circle())
+                    .frame(width: 45)
             }
-            .padding()
             .opacity(
                 vm.mode == .trackUser ? 1 : 0
             )

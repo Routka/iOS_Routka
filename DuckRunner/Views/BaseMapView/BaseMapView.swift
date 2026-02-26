@@ -45,71 +45,83 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
                 MapContents.checkPoint(checkpoint)
             }
             
-            if let startPoint = vm.replayTrack?.points.first,
-               vm.currentTrack != nil {
+            if let startPoint = vm.startReplayCheckpoint?.point,
+               vm.currentTrack == nil {
                 MapContents.startPoint(startPoint)
             }
             
-            if let stopPoint = vm.replayTrack?.points.last {
+            if let stopPoint = vm.stopReplayCheckpoint?.point {
                 MapContents.stopPoint(stopPoint)
             }
             
         }
-            .ignoresSafeArea(.all)
-            .overlay(alignment: .top) {
-                if let currentSpeed = vm.currentSpeed {
-                    SpeedometerView(currentSpeed, displayUnit: unitSpeed)
-                        .transition(.opacity)
-                }
+        .overlay(alignment: .top) {
+            if let currentSpeed = vm.currentSpeed {
+                SpeedometerView(currentSpeed, displayUnit: unitSpeed)
+                    .transition(.opacity)
             }
-            .overlay(alignment: .bottom, content: {
-                controls
-            })
-            .animation(.bouncy, value: vm.currentSpeed != nil)
+        }
+        .safeAreaInset(edge: .bottom, content: {
+            controls
+        })
+        .overlay(alignment: .topLeading) {
+            replayDeselect
+                .padding(5)
+        }
+        .animation(.bouncy, value: vm.currentSpeed != nil)
+        .animation(.default, value: vm.replayTrack != nil)
+        .animation(.default, value: vm.locationAccess.isAuthorized())
+    }
+    
+    @ViewBuilder
+    private var replayDeselect: some View {
+        if vm.replayTrack != nil {
+            Button {
+                vm.deselectReplay()
+            } label: {
+                Text("Stop Replay")
+                    .bold()
+                    .foregroundStyle(Color.primary)
+                    .padding(8)
+            }
+            .glassEffect(.regular.tint(.accentColor.opacity(0.5)).interactive(), in: Capsule())
+            .transition(.opacity)
+        }
     }
     
     private var controls: some View {
-        VStack(alignment: .trailing) {
-            if vm.replayTrack != nil {
-                Button {
-                    vm.deselectReplay()
-                } label: {
-                    Text("Stop Replay")
-                        .bold()
-                        .foregroundStyle(Color.primary)
-                        .padding(8)
-                }
-                .glassEffect(.regular.tint(.accentColor.opacity(0.5)).interactive(), in: Capsule())
-                .transition(.opacity)
-            }
+        VStack {
             if vm.locationAccess.isAuthorized() {
                 if let track = vm.currentTrack {
                     let unitSpeed = UnitSpeed.byName(speedUnit)
                     TrackLiveInfoView(track: track, unit: unitSpeed)
                 }
-                    TrackControlButton(vm: vm)
-                        .disabled(vm.isTrackControlAvailable == false)
-                        .opacity(vm.isTrackControlAvailable ? 1 : 0.6)
+                TrackControlButton(vm: vm)
+                    .disabled(vm.isTrackControlAvailable == false)
+                    .opacity(vm.isTrackControlAvailable ? 1 : 0.6)
             } else {
                 LocationAccessControlView(vm: vm)
             }
-               
         }
-        .padding(10)
-        .animation(.default, value: vm.replayTrack != nil)
-        
+        .padding(.horizontal, 10)
+        .padding(.bottom, 5)
     }
 }
 
 import Combine
 private final class PreviewModel: BaseMapViewModelProtocol {
-    var locationAccess: CLAuthorizationStatus = .notDetermined
+    var startReplayCheckpoint: TrackCheckPoint? = nil
+    
+    var stopReplayCheckpoint: TrackCheckPoint? = nil
+    
+    var locationAccess: CLAuthorizationStatus = .denied
     
     func requestLocation() {
         
     }
     
     func deselectReplay() {
+        self.replayTrack = nil
     }
     
     var mapMode: MapViewMode = .bounds(.filledTrack)
@@ -126,7 +138,7 @@ private final class PreviewModel: BaseMapViewModelProtocol {
     
     var isTrackControlAvailable: Bool = true
     
-    var replayTrack: Track? = .filledTrack
+    @Published var replayTrack: Track? = .filledTrack
     
     @Published var currentTrack: Track? = .filledTrack
     

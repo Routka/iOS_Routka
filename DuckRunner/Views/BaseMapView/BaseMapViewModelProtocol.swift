@@ -11,6 +11,12 @@ import MapKit
 /// Protocol defining the required interface for map-based track recording view models.
 /// Provides access to current track, position, speed, and track control actions.
 protocol BaseMapViewModelProtocol: ObservableObject, TrackControllerProtocol, LocationAccessViewModelProtocol {
+    
+    /// Checkpoint for starting the track replay
+    var startReplayCheckpoint: TrackCheckPoint? { get }
+    /// Final checkpoint for ending the track replay
+    var stopReplayCheckpoint: TrackCheckPoint? { get }
+    
     /// The currently active (or most recent) track, if any.
     var currentTrack: Track? { get set }
     

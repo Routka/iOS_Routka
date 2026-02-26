@@ -23,6 +23,9 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
     
     @Published var locationAccess: CLAuthorizationStatus = .notDetermined
     
+    @Published var startReplayCheckpoint: TrackCheckPoint?
+    @Published var stopReplayCheckpoint: TrackCheckPoint?
+    
     // MARK: - Outside methods
     func startTrack() {
         self.trackService.startTrack(at: .now)
@@ -59,8 +62,6 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
     let trackReplayCoordinator: any TrackReplayCoordinatorProtocol
     
     // MARK: - Internal variables
-    var startReplayCheckpoint: TrackCheckPoint?
-    var stopReplayCheckpoint: TrackCheckPoint?
     
     var replayValidator: TrackReplayValidator? = nil
     
@@ -81,14 +82,11 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
         if currentTrack != nil {
             await self.replayValidator?.passedPoint(trackPoint)
         }
-        guard var checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
+        guard let checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
             .sorted(by: {$0.point.date < $1.point.date}) else { return }
-        if let start = self.startReplayCheckpoint {
-            checkpoints.insert(start, at: 0)
-        }
-        let lockedCheckpoints = checkpoints
+        
         await MainActor.run {
-            self.checkpoints = lockedCheckpoints
+            self.checkpoints = checkpoints
         }
         
     }
@@ -162,6 +160,14 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
                 let checkpoint = TrackCheckPoint(point: lastPoint,
                                                  distanceThreshold: SettingsService.shared.checkpointDistanceActivateThreshold)
                 self.stopReplayCheckpoint = checkpoint
+            }
+            Task {
+                if let checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
+                    .sorted(by: {$0.point.date < $1.point.date}) {
+                    await MainActor.run {
+                        self.checkpoints = checkpoints
+                    }
+                }
             }
         case .deselect:
             self.replayTrack = nil
