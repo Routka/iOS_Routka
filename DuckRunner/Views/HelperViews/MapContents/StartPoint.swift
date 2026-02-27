@@ -14,32 +14,43 @@ extension MapContents {
         
         Annotation(coordinate: trackPoint.position,
                    anchor: .bottom) {
-            VStack(spacing: 5) {
-                HStack(spacing: 2) {
-                    Image(systemName: "flag")
-                        .foregroundStyle(Color.green)
-                        .stroke(color: .black, width: 0.2)
-                    Text("START")
-                        .stroke(color: .black, width: 1)
-                }
-                .bold()
-                Circle()
-                    .fill(Color.cyan)
-                    .stroke(.red, lineWidth: 2, antialiased: true)
-                    .frame(width: 5, height: 5)
-                    .offset(y: 2.5)
-            }
+            StartPointView(trackPoint: trackPoint)
         } label: {
         }
 
     }
 }
 
+private struct StartPointView: View {
+    let startPoint: TrackPoint
+    
+    var body: some View {
+        VStack(spacing: 5) {
+            HStack(spacing: 2) {
+                Image(systemName: "flag")
+                    .foregroundStyle(Color.green)
+                    .stroke(color: .black, width: 0.2)
+                Text("START")
+                    .stroke(color: .black, width: 1)
+            }
+            .bold()
+            Circle()
+                .fill(Color.cyan)
+                .stroke(.red, lineWidth: 2, antialiased: true)
+                .frame(width: 5, height: 5)
+                .offset(y: 2.5)
+        }
+    }
+}
+
 #Preview {
     VStack {
         Map() {
-            MapContents.speedTrack(.filledTrack)
+//            MapContents.speedTrack(.filledTrack)
             MapContents.startPoint(Track.filledTrack.points.first!)
         }
     }
+}
+#Preview("Inside View") {
+    StartPointView(startPoint: Track.filledTrack.points.first!)
 }
