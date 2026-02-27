@@ -16,6 +16,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     // Main initializer for use in app
     override init() {
         self.locationManager = CLLocationManager()
+        self.locationManager.distanceFilter = 8
         super.init()
         self.locationManager.delegate = self
 //        self.manageAuthorizationStatus(self.locationManager.authorizationStatus)
