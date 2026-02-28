@@ -25,32 +25,46 @@ extension MapContents {
 
 private struct CheckPointView: View {
     let trackPoint: TrackCheckPoint
+    let passColor = Color.green
+    let unpassColor = Color.gray
+    
+    private var baseCircle: some View {
+        let unFilledAmount = 0.15
+        let degree = (360 * unFilledAmount) / 2
+        return Circle()
+            .trim(from: 0.0,
+                  to: trackPoint.checkPointPassed ? 0.5 : unFilledAmount)
+            .stroke(trackPoint.checkPointPassed ? passColor : unpassColor)
+            .rotationEffect(.degrees(-(degree)))
+        
+    }
     var body: some View {
-        VStack(spacing: 1) {
-            if trackPoint.checkPointPassed {
-                Image(systemName: "flag.pattern.checkered.2.crossed")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(Color.green)
-                    .stroke(color: .black, width: 0.2)
-            } else {
-                Image(systemName: "flag.2.crossed")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(Color.gray)
-                    .stroke(color: .black, width: 0.2)
-            }
+        ZStack {
+            baseCircle
+            baseCircle
+                .rotationEffect(.degrees(180))
+            Circle()
+                .stroke(trackPoint.checkPointPassed ? unpassColor : passColor,
+                        lineWidth: 1)
+                .padding(.horizontal, 5)
+                .opacity(0.6)
+
         }
-        .frame(width: 30)
-        .animation(.bouncy(duration: 0.5), value: trackPoint.checkPointPassed)
+        .frame(width: 20)
+        .animation(.easeInOut, value: trackPoint.checkPointPassed)
     }
 }
 
 #Preview {
     @Previewable @State var lastCheckpoint = TrackCheckPoint(point: Track.filledTrack.points.last!, distanceThreshold: 50)
     VStack {
-        Button("Pass") {
-            lastCheckpoint.setCheckpointPassing(to: true)
+        HStack {
+            Button("Pass") {
+                lastCheckpoint.setCheckpointPassing(to: true)
+            }
+            Button("UNPass") {
+                lastCheckpoint.setCheckpointPassing(to: false)
+            }
         }
         Map() {
             var checkpoint = TrackCheckPoint(point: Track.filledTrack.points.first!, distanceThreshold: 50)
@@ -63,10 +77,20 @@ private struct CheckPointView: View {
 
 #Preview("Inside View") {
     @Previewable @State var lastCheckpoint = TrackCheckPoint(point: Track.filledTrack.points.last!, distanceThreshold: 50)
-    HStack {
-        CheckPointView(trackPoint: lastCheckpoint)
-        var checkpoint = TrackCheckPoint(point: Track.filledTrack.points.first!, distanceThreshold: 50)
-        let _ = checkpoint.setCheckpointPassing(to: true)
-        CheckPointView(trackPoint: checkpoint)
+    VStack {
+        HStack {
+            Button("Pass") {
+                lastCheckpoint.setCheckpointPassing(to: true)
+            }
+            Button("UNPass") {
+                lastCheckpoint.setCheckpointPassing(to: false)
+            }
+        }
+        HStack {
+            CheckPointView(trackPoint: lastCheckpoint)
+            var checkpoint = TrackCheckPoint(point: Track.filledTrack.points.first!, distanceThreshold: 50)
+            let _ = checkpoint.setCheckpointPassing(to: true)
+            CheckPointView(trackPoint: checkpoint)
+        }
     }
 }
