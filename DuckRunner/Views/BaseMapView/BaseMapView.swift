@@ -20,7 +20,7 @@ extension BaseMapView where ViewModel == BaseMapViewModel {
 /// Hosts overlays for live speed and track info, and manages user tracking controls.
 struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
     /// The view model providing current track, speed, and control actions for the map.
-    @StateObject private var vm: ViewModel
+    @State private var vm: ViewModel
     /// User's preferred unit for speed display (persisted in app storage).
     @AppStorage("speedunit") var speedUnit: String = "km/h"
     private let dependencies: DependencyManager
@@ -28,7 +28,7 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
     init(vm: ViewModel,
          dependencies: DependencyManager) {
         self.dependencies = dependencies
-        self._vm = .init(wrappedValue: vm)
+        self._vm = .init(initialValue: vm)
     }
     
     
@@ -37,22 +37,25 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
         let unitSpeed = UnitSpeed.byName(speedUnit)
         MapView(mode: vm.mapMode, dependencies: dependencies) {
             UserAnnotation()
-            if let replayTrack = vm.replayTrack {
+            if let replayTrack = vm.replayValidator?.track {
                 MapContents.replayTrack(replayTrack)
             }
-            if let currentTrack = vm.currentTrack {
+            if let currentTrack = vm.trackRecordingService.currentTrack {
                 MapContents.speedTrack(currentTrack)
             }
-            ForEach(vm.checkpoints, id: \.id) { checkpoint in
+            let checkPoints = vm.replayValidator?.checkpoints
+                .map({$0.value})
+            
+            ForEach(checkPoints ?? [], id: \.id) { checkpoint in
                 MapContents.checkPoint(checkpoint)
             }
             
-            if let startPoint = vm.startReplayCheckpoint?.point,
-               vm.currentTrack == nil {
+            if let startPoint = vm.replayValidator?.startReplayCheckpoint?.point,
+               vm.trackRecordingService.currentTrack == nil {
                 MapContents.startPoint(startPoint)
             }
             
-            if let stopPoint = vm.stopReplayCheckpoint?.point {
+            if let stopPoint = vm.replayValidator?.stopReplayCheckpoint?.point {
                 MapContents.stopPoint(stopPoint)
             }
             
@@ -71,13 +74,13 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
                 .padding(5)
         }
         .animation(.bouncy, value: vm.currentSpeed != nil)
-        .animation(.default, value: vm.replayTrack != nil)
+        .animation(.default, value: vm.replayValidator?.track != nil)
         .animation(.default, value: vm.locationAccess.isAuthorized())
     }
     
     @ViewBuilder
     private var replayDeselect: some View {
-        if vm.replayTrack != nil {
+        if vm.replayValidator?.track != nil {
             Button {
                 vm.deselectReplay()
             } label: {
@@ -94,13 +97,16 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
     private var controls: some View {
         VStack {
             if vm.locationAccess.isAuthorized() {
-                if let track = vm.currentTrack {
+                if let track = vm.trackRecordingService.currentTrack {
                     let unitSpeed = UnitSpeed.byName(speedUnit)
                     TrackLiveInfoView(track: track, unit: unitSpeed)
                 }
-                TrackControlButton(vm: vm)
-                    .disabled(vm.isTrackControlAvailable == false)
-                    .opacity(vm.isTrackControlAvailable ? 1 : 0.6)
+                if vm.trackControlMode != .hidden {
+                    TrackControlButton(vm: vm)
+                        .disabled(vm.trackControlMode == .unavailable)
+                        .opacity(vm.trackControlMode == .available ? 1 : 0.6)
+                }
+                    
             } else {
                 LocationAccessControlView(vm: vm)
             }
@@ -111,49 +117,35 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
 }
 
 import Combine
+@Observable
 private final class PreviewModel: BaseMapViewModelProtocol {
-    var startReplayCheckpoint: TrackCheckPoint? = nil
+    func isReplayingTrack() -> Bool {
+        return true
+    }
     
-    var stopReplayCheckpoint: TrackCheckPoint? = nil
+    var mapMode: MapViewMode = .free(.filledTrack)
     
-    var locationAccess: CLAuthorizationStatus = .denied
+    var trackControlMode: TrackControlMode = .available
     
-    func requestLocation() {
-        
+    var currentSpeed: CLLocationSpeed? = 0
+    
+    var locationAccess: CLAuthorizationStatus = .authorizedWhenInUse
+    
+    var trackRecordingService: any TrackRecordingServiceProtocol = TrackRecordingService()
+    
+    var replayValidator: TrackReplayValidator? = nil
+    
+    func startTrack() {
+    }
+    
+    func stopTrack() async throws {
     }
     
     func deselectReplay() {
-        self.replayTrack = nil
     }
     
-    var mapMode: MapViewMode = .bounds(.filledTrack)
-    
-    var checkpoints: [TrackCheckPoint] = {
-        let points = Track.filledTrack.points
-        let array = [
-            points[29],
-            points[58],
-            points[78]
-        ]
-        return array.map({TrackCheckPoint(point: $0, distanceThreshold: 50)})
-    }()
-    
-    var isTrackControlAvailable: Bool = true
-    
-    @Published var replayTrack: Track? = .filledTrack
-    
-    @Published var currentTrack: Track? = .filledTrack
-    
-    @Published var currentSpeed: CLLocationSpeed? = 0
-    
-    func startTrack() {
-        self.currentSpeed = 35.553
+    func requestLocation() {
     }
-    
-    func stopTrack() {
-        self.currentSpeed = nil
-    }
-    
 }
 
 #Preview {

@@ -11,9 +11,7 @@ import CoreLocation
 import SwiftUI
 
 extension DependencyManager {
-    static func mock(
-        trackService: any LiveTrackServiceProtocol = MockTrackService(),
-        locationService: any LocationServiceProtocol = MockLocationService(),
+    static func mock(locationService: any LocationServiceProtocol = MockLocationService(),
         storageService: any TrackStorageProtocol = MockStorage(),
         mapSnapshotGenerator: any MapSnapshotGeneratorProtocol = MockMapSnapshotGenerator(),
         mapSnippetCache: any TrackMapSnippetCacheProtocol = MockTrackMapSnippetCache(),
@@ -22,8 +20,7 @@ extension DependencyManager {
         cacheFileManager: any CacheFileManagerProtocol = MockCacheFileManager(),
         routers: [String: Router] = [:]
     ) -> Self {
-        self.init(trackService: trackService,
-                  locationService: locationService,
+        self.init(locationService: locationService,
                   storageService: storageService,
                   mapSnapshotGenerator: mapSnapshotGenerator,
                   mapSnippetCache: mapSnippetCache,
@@ -63,22 +60,6 @@ extension DependencyManager {
         }
         
         var actionPublisher: PassthroughSubject<StorageAction, Never> = .init()
-    }
-    
-    final class MockTrackService: LiveTrackServiceProtocol {
-        var currentTrack: CurrentValueSubject<Track?, Never> = .init(nil)
-        
-        func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) {
-        }
-        
-        func startTrack(at date: Date) {
-            self.currentTrack.send(.emptyTrack)
-        }
-        
-        func stopTrack(at date: Date) throws(TrackServiceError) -> Track {
-            self.currentTrack.send(.filledTrack)
-            return .filledTrack
-        }
     }
     
     final class MockLocationService: LocationServiceProtocol {

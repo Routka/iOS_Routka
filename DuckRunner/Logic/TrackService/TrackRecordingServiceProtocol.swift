@@ -9,8 +9,8 @@
 import Combine
 import Foundation
 
-protocol LiveTrackServiceProtocol: ObservableObject {
-    var currentTrack: CurrentValueSubject<Track?, Never> { get }
+protocol TrackRecordingServiceProtocol: Observable {
+    var currentTrack: Track? { get }
     func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError)
     func startTrack(at date: Date)
     @discardableResult

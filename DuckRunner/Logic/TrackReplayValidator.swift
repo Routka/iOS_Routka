@@ -7,6 +7,13 @@
 
 import Foundation
 import CoreLocation
+import SwiftUI
+
+enum SuggestedRecordingAction {
+    case allow
+    case forbid
+    case immediate
+}
 
 
 /// Coordinates validation of a user's replayed route against a recorded track.
@@ -23,7 +30,11 @@ import CoreLocation
 /// mark checkpoints as passed when the user's position falls within the
 /// checkpoint's acceptance radius. Completion can be queried as a fraction in
 /// the range 0.0–1.0 using `trackCompletionByCheckpoints()`.
-final actor TrackReplayValidator {
+@Observable
+final class TrackReplayValidator {
+    
+    private(set) var startReplayCheckpoint: TrackCheckPoint?
+    private(set) var stopReplayCheckpoint: TrackCheckPoint?
     
     /// All generated checkpoints keyed by their stable identifier.
     /// - Note: This property is `private(set)` and actor-isolated. Read access
@@ -32,7 +43,7 @@ final actor TrackReplayValidator {
     private(set) var checkpoints: [UUID: TrackCheckPoint] = [:]
     
     /// Track which is being replayed
-    private let track: Track
+    let track: Track
     
     /// Creates a validator for a recorded track and generates periodic checkpoints.
     ///
@@ -51,6 +62,7 @@ final actor TrackReplayValidator {
         let points = replayingTrack.points
         // Guard for at least one point
         guard let firstPoint = points.first else { return }
+        guard let lastPoint = points.last else { return }
 
         // Helper to compute distance between two coordinates
         func distance(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> CLLocationDistance {
@@ -63,10 +75,14 @@ final actor TrackReplayValidator {
         var nextThreshold: CLLocationDistance = 0 // create at 0m and then every 500m
         var accumulated: CLLocationDistance = 0
 
-        // DO NOT CREATE POINT AT 0 METERS, ITS A START POINT HANDLED ELSEWHERE
+        
+        self.startReplayCheckpoint = TrackCheckPoint(point: firstPoint,
+                                                     distanceThreshold: SettingsService.shared.checkpointDistanceActivateThreshold)
+        self.stopReplayCheckpoint = TrackCheckPoint(point: lastPoint,
+                                                     distanceThreshold: SettingsService.shared.checkpointDistanceActivateThreshold)
+        
+        
         var lastCoord = firstPoint.position
-//        let firstCheckpoint = TrackCheckPoint(point: firstPoint)
-//        checkpoints[firstCheckpoint.id] = firstCheckpoint
         nextThreshold += interval
 
         // Walk through subsequent points accumulating distance and placing checkpoints when thresholds are crossed
@@ -92,8 +108,18 @@ final actor TrackReplayValidator {
     ///
     /// - Parameter point: The latest user location sample expressed as a `TrackPoint`.
     func passedPoint(_ point: TrackPoint) async {
-        let checkpointsToCheck = checkpoints.map({$0.value})
         let coordinate = point.position
+        
+        if startReplayCheckpoint?.checkPointPassed == false {
+            return
+        }
+        
+        if stopReplayCheckpoint?.checkPointPassed == true {
+            return
+        }
+        
+        let checkpointsToCheck = checkpoints.map({$0.value})
+        
         var isPassed = false
         for checkpoint in checkpointsToCheck where checkpoint.checkPointPassed == false {
             isPassed = checkpoint.isPointInCheckpoint(coordinate)
@@ -101,6 +127,50 @@ final actor TrackReplayValidator {
                 self.checkpoints[checkpoint.id]?.setCheckpointPassing(to: isPassed)
             }
         }
+    }
+    
+    func suggestedStartRecording(_ location: CLLocation) -> SuggestedRecordingAction {
+        switch track.type {
+        case .classical:
+            // If replaying classical track
+            // in startPoint
+            if startReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true,
+                // if speed < 1 m/s we can allow to start track
+                location.speed < 1 {
+                return .allow
+            } else {
+                // if speed is higher or we are outside start zone - disable availability to start track
+                return .forbid
+            }
+            
+        case .speedtrap:
+            // If replaying speedtrap
+            // if we get in startPoint = autostart no matter
+            if startReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true {
+                return .immediate
+            } else {
+                return .forbid
+            }
+        }
+    }
+    
+    func suggestedStopRecording(_ location: CLLocation) -> SuggestedRecordingAction {
+        if self.stopReplayCheckpoint?.checkPointPassed == false,
+            stopReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true {
+            return .immediate
+        } else {
+            return .allow
+        }
+    }
+    
+    /// Sets startReplayCheckpoint as passed
+    func startValidatingReplay() {
+        self.startReplayCheckpoint?.setCheckpointPassing(to: true)
+    }
+    
+    /// Sets stopreplayCheckpoint as passed
+    func stopValidatingReplay() {
+        self.stopReplayCheckpoint?.setCheckpointPassing(to: true)
     }
     
     /// Returns overall completion based on passed checkpoints.
@@ -112,22 +182,6 @@ final actor TrackReplayValidator {
     /// - Returns: A `Double` in 0.0–1.0 representing completion.
     func trackCompletionByCheckpoints() async -> Double {
         let total = checkpoints.count
-//        if total == 0 { return 0 }
-//        // Collecting checkpoint passing using taskgroup because isPassed protected by actor isolation
-//        let passStates: [Bool] = await withTaskGroup(of: Bool.self) { group in
-//            for (_, checkpoint) in checkpoints {
-//                group.addTask {
-//                    await checkpoint.checkPointPassed
-//                }
-//            }
-//            var results: [Bool] = []
-//            results.reserveCapacity(total)
-//            for await value in group {
-//                results.append(value)
-//            }
-//            return results
-//        }
-//        let passedCheckpoints = passStates.filter { $0 }.count
         let passedCheckpoints = checkpoints.count(where: {$0.value.checkPointPassed})
         let percent: Double = Double(passedCheckpoints) / Double(total)
         return max(0.0, min(1.0, percent))

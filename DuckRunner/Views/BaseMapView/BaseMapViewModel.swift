@@ -8,41 +8,44 @@ import SwiftUI
 import Combine
 import MapKit
 
+enum TrackControlMode {
+    case unavailable
+    case hidden
+    case available
+}
 
-final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelProtocol, TrackControllerProtocol {
+@Observable
+final class BaseMapViewModel: BaseMapViewModelProtocol {
+    
     // MARK: - Outside parameters
     let mapMode: MapViewMode = .trackUser
-    @Published var isTrackControlAvailable: Bool = true
-    
-    @Published var currentTrack: Track? = nil
-    
-    @Published var currentSpeed: CLLocationSpeed? = 0
-    
-    @Published var replayTrack: Track? = nil
-    @Published var checkpoints: [TrackCheckPoint] = []
-    
-    @Published var locationAccess: CLAuthorizationStatus = .notDetermined
-    
-    @Published var startReplayCheckpoint: TrackCheckPoint?
-    @Published var stopReplayCheckpoint: TrackCheckPoint?
+    var trackControlMode: TrackControlMode = .available
+    var currentSpeed: CLLocationSpeed? = 0
+    var locationAccess: CLAuthorizationStatus = .notDetermined
+    let trackRecordingService: any TrackRecordingServiceProtocol
+    private(set) var replayValidator: TrackReplayValidator? = nil
     
     // MARK: - Outside methods
+    
+    func isReplayingTrack() -> Bool {
+        if let track = self.trackRecordingService.currentTrack,
+           track.stopDate == nil {
+            return true
+        } else {
+            return false
+        }
+    }
     func startTrack() {
-        self.trackService.startTrack(at: .now)
-        
-        // Prevent the device from sleeping during track recording
-        UIApplication.shared.isIdleTimerDisabled = true
+        self.trackRecordingService.startTrack(at: .now)
     }
     
     func stopTrack() async throws {
-        var track = try self.trackService.stopTrack(at: .now)
-        // Re-enable the idle timer after stopping the track
-        UIApplication.shared.isIdleTimerDisabled = false
+        var track = try self.trackRecordingService.stopTrack(at: .now)
         
-        if let completion = await self.replayValidator?.trackCompletionByCheckpoints(),
-           completion >= SettingsService.shared.replayCompletionThreshold {
-            track.parentID = self.replayTrack?.id
+        if self.replayValidator?.stopReplayCheckpoint?.checkPointPassed == true {
+            track.parentID = self.replayValidator?.track.id
         }
+        
         guard track.points.isEmpty == false else { return }
         try? await self.storageService.addTrack(track)
     }
@@ -56,14 +59,11 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
     }
     
     // MARK: - Dependencies
-    let trackService: any LiveTrackServiceProtocol
     let locationService: any LocationServiceProtocol
     let storageService: any TrackStorageProtocol
     let trackReplayCoordinator: any TrackReplayCoordinatorProtocol
     
-    // MARK: - Internal variables
     
-    var replayValidator: TrackReplayValidator? = nil
     
     var cancellables: Set<AnyCancellable> = .init()
     
@@ -74,70 +74,56 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
                                            date: .now)
         self.currentSpeed = max(0,location.speed)
         
-        try? self.trackService.appendTrackPosition(trackPoint)
+        try? self.trackRecordingService.appendTrackPosition(trackPoint)
         
         
         await self.checkIfInReplayCheckpoint(location)
-        // if we haven't recording the track, we dont try to validate the replay
-        if currentTrack != nil {
-            await self.replayValidator?.passedPoint(trackPoint)
-        }
-        guard let checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
-            .sorted(by: {$0.point.date < $1.point.date}) else { return }
         
-        await MainActor.run {
-            self.checkpoints = checkpoints
+        await self.replayValidator?.passedPoint(trackPoint)
+        
+        if self.replayValidator?.startReplayCheckpoint?.checkPointPassed == true,
+        self.trackRecordingService.currentTrack == nil {
+            self.startTrack()
         }
+        
+        if self.replayValidator?.stopReplayCheckpoint?.checkPointPassed == true {
+            try? await self.stopTrack()
+        }
+        
+        
         
     }
     
     /// Reacting if we are in stop or start checkpoints
     func checkIfInReplayCheckpoint(_ location: CLLocation) async {
-        guard let replayTrack else { return }
-        print("VM: Received location and checking for checkpoint")
+        /*
+         if check recordingService not recording
+         then we ask replayValidator if we should startRecording, allow start recording or dissallow startRecording
+         */
+        guard let replayValidator else { return }
+        
         // Still not recording
-        if currentTrack == nil {
-            print("VM: Track not recording")
-            switch replayTrack.type {
-            case .classical:
-                // If replaying classical track
-                print("VM: is classical track")
-                // in startPoint
-                if startReplayCheckpoint?.isPointInCheckpoint(location.coordinate, printA: true) == true,
-                    // if speed < 1 m/s we can allow to start track
-                    location.speed < 1 {
-                    print("VM: inside and speed is low \(location.speed)")
-                    if !self.isTrackControlAvailable {
-                        self.startReplayCheckpoint?.setCheckpointPassing(to: true)
-                        self.isTrackControlAvailable = true
-                    }
-                } else {
-                    print("VM: not inside or speed to big \(location.speed)")
-                    // if speed is higher or we are outside start zone - disable availability to start track
-                    if self.isTrackControlAvailable {
-                        self.startReplayCheckpoint?.setCheckpointPassing(to: false)
-                        self.isTrackControlAvailable = false
-                    }
-                }
-                
-            case .speedtrap:
-                print("VM: is speedtrap")
-                // If replaying speedtrap
-                // if we get in startPoint = autostart no matter
-                if startReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true {
-                    self.startReplayCheckpoint?.setCheckpointPassing(to: true)
-                    self.isTrackControlAvailable = true
-                    self.startTrack()
-                }
+        if self.trackRecordingService.currentTrack == nil {
+            switch replayValidator.suggestedStartRecording(location) {
+            case .allow:
+                self.trackControlMode = .available
+            case .forbid:
+                self.trackControlMode = .unavailable
+            case .immediate:
+                self.trackControlMode = .available
+                self.startTrack()
             }
+            
         } else {
             // Already recording
-            print("VM: track is recording")
             // If in stop zone - autostop in any track type
-            if  self.stopReplayCheckpoint?.checkPointPassed == false,
-                stopReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true {
-                self.stopReplayCheckpoint?.setCheckpointPassing(to: true)
-                self.isTrackControlAvailable = true
+            switch replayValidator.suggestedStopRecording(location) {
+            case .allow:
+                self.trackControlMode = .available
+            case .forbid:
+                self.trackControlMode = .unavailable
+            case .immediate:
+                self.trackControlMode = .available
                 try? await self.stopTrack()
             }
         }
@@ -146,47 +132,23 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
     func receiveReplayTrackAction(_ action: TrackReplayAction) {
         switch action {
         case .select(let track):
-            self.currentTrack = nil
-            self.replayTrack = track
+            _ = try? self.trackRecordingService.stopTrack(at: .now)
             self.replayValidator = .init(replayingTrack: track,
                                          checkPointInterval: SettingsService.shared.checkpointDistanceInterval)
-            self.isTrackControlAvailable = false
-            if let firstPoint = replayTrack?.points.first {
-                let checkpoint = TrackCheckPoint(point: firstPoint,
-                                                 distanceThreshold: SettingsService.shared.checkpointDistanceActivateThreshold)
-                self.startReplayCheckpoint = checkpoint
-            }
-            if let lastPoint = replayTrack?.points.last {
-                let checkpoint = TrackCheckPoint(point: lastPoint,
-                                                 distanceThreshold: SettingsService.shared.checkpointDistanceActivateThreshold)
-                self.stopReplayCheckpoint = checkpoint
-            }
-            Task {
-                if let checkpoints = await self.replayValidator?.checkpoints.map({$0.value})
-                    .sorted(by: {$0.point.date < $1.point.date}) {
-                    await MainActor.run {
-                        self.checkpoints = checkpoints
-                    }
-                }
-            }
+            
+            self.trackControlMode = .unavailable
+            
         case .deselect:
-            self.replayTrack = nil
             self.replayValidator = nil
-            self.isTrackControlAvailable = true
-            self.stopReplayCheckpoint = nil
-            self.startReplayCheckpoint = nil
-            self.checkpoints = []
+            self.trackControlMode = .available
         }
     }
     
-    func receiveCurrentTrack(_ track: Track?) {
-        self.currentTrack = track
-    }
     
     // MARK: - Init
-    init(dependencies: DependencyManager) {
+    init(dependencies: DependencyManager, trackRecordingService: any TrackRecordingServiceProtocol = TrackRecordingService()) {
         self.trackReplayCoordinator = dependencies.trackReplayCoordinator
-        self.trackService = dependencies.trackService
+        self.trackRecordingService = trackRecordingService
         self.locationService = dependencies.locationService
         self.storageService = dependencies.storageService
         
@@ -202,15 +164,6 @@ final class BaseMapViewModel: BaseMapViewModelProtocol, LocationAccessViewModelP
             .authorizationStatus
             .sink { [weak self] status in
                 self?.locationAccess = status
-            }
-            .store(in: &cancellables)
-        
-        self.trackService
-            .currentTrack
-            .sink { [weak self] new in
-                Task {
-                    self?.receiveCurrentTrack(new)
-                }
             }
             .store(in: &cancellables)
         

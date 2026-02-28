@@ -46,7 +46,7 @@ struct TrackReplayValidatorTests {
         }
         let track = await Track(points: points, startDate: .now)
 
-        let validator = TrackReplayValidator(replayingTrack: track, checkPointInterval: 500)
+        let validator = await TrackReplayValidator(replayingTrack: track, checkPointInterval: 500)
         let count = await validator.checkpoints.count
 
         #expect(count == 4, "Expected checkpoints at 500, 1000, 1500, 2000 meters")
@@ -69,8 +69,8 @@ struct TrackReplayValidatorTests {
         let track = await Track(points: points, startDate: .now)
 
         // Initialize validator
-        let validator = TrackReplayValidator(replayingTrack: track, checkPointInterval: 50)
-
+        let validator = await TrackReplayValidator(replayingTrack: track, checkPointInterval: 50)
+        await validator.startValidatingReplay()
         // Create a parallel path offset ~15m to the north for each point
         let offsetMeters: Double = 15
         // Feed the validator with offset points simulating a replay near the checkpoints
@@ -115,7 +115,8 @@ struct TrackReplayValidatorTests {
         let track = await Track(points: points, startDate: .now)
 
         // Initialize validator
-        let validator = TrackReplayValidator(replayingTrack: track, checkPointInterval: 500)
+        let validator = await TrackReplayValidator(replayingTrack: track, checkPointInterval: 500)
+        await validator.startValidatingReplay()
 
         // Feed the validator with offset points simulating a replay near the checkpoints
         for p in points {

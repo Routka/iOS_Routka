@@ -122,7 +122,8 @@ struct MapView<Content: MapContent>: View {
     private var followButton: some View {
         let tracking = ((!vm.mapPosition.followsUserHeading ||
                          !vm.mapPosition.followsUserLocation) &&
-                         vm.mode == .trackUser)
+                        vm.mode == .trackUser)
+        if vm.mode == .trackUser {
             Button {
                 withAnimation {
                     self.vm.mapPosition = .userLocation(followsHeading: true, fallback: .automatic)
@@ -131,16 +132,13 @@ struct MapView<Content: MapContent>: View {
                 Image(systemName: tracking ? "location.north.line" : "location.north.line.fill")
                     .resizable()
                     .scaledToFit()
-                    
+                
                     .padding()
                     .glassEffect(.regular, in: Circle())
                     .frame(width: 45)
             }
-            .opacity(
-                vm.mode == .trackUser ? 1 : 0
-            )
             .animation(.bouncy, value: tracking)
-        
+        }
     }
 }
 

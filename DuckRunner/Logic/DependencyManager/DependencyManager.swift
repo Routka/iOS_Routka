@@ -8,7 +8,6 @@
 import Foundation
 
 final class DependencyManager {
-    let trackService: any LiveTrackServiceProtocol
     let locationService: any LocationServiceProtocol
     let storageService: any TrackStorageProtocol
     let mapSnapshotGenerator: any MapSnapshotGeneratorProtocol
@@ -20,7 +19,6 @@ final class DependencyManager {
     let routers: [String: Router]
     
     init(
-        trackService: any LiveTrackServiceProtocol,
         locationService: any LocationServiceProtocol,
         storageService: any TrackStorageProtocol,
         mapSnapshotGenerator: any MapSnapshotGeneratorProtocol,
@@ -30,7 +28,6 @@ final class DependencyManager {
         cacheFileManager: any CacheFileManagerProtocol,
         routers: [String: Router],
     ) {
-        self.trackService = trackService
         self.locationService = locationService
         self.storageService = storageService
         self.mapSnapshotGenerator = mapSnapshotGenerator

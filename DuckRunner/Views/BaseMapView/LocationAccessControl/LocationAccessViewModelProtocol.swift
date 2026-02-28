@@ -10,7 +10,7 @@ import SwiftUI
 import CoreLocation
 
 /// Protocol defining the required interface for asking location and showing current location
-protocol LocationAccessViewModelProtocol: ObservableObject {
+protocol LocationAccessViewModelProtocol: Observable {
     var locationAccess: CLAuthorizationStatus { get }
     /// Try to request location authorization
     func requestLocation()
