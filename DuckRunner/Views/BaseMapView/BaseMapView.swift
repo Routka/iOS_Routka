@@ -66,14 +66,15 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
                     .transition(.opacity)
             }
         }
-        .safeAreaInset(edge: .bottom, content: {
+        .overlay(alignment: .bottom) {
             controls
-        })
+        }
         .overlay(alignment: .topLeading) {
             replayDeselect
                 .padding(5)
         }
         .animation(.bouncy, value: vm.currentSpeed != nil)
+        .animation(.bouncy, value: vm.trackRecordingService.currentTrack != nil)
         .animation(.default, value: vm.replayValidator?.track != nil)
         .animation(.default, value: vm.locationAccess.isAuthorized())
     }
@@ -103,6 +104,7 @@ struct BaseMapView<ViewModel: BaseMapViewModelProtocol>: View {
                 }
                 if vm.trackControlMode != .hidden {
                     TrackControlButton(vm: vm)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                         .disabled(vm.trackControlMode == .unavailable)
                         .opacity(vm.trackControlMode == .available ? 1 : 0.6)
                 }

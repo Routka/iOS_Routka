@@ -11,6 +11,7 @@ import Foundation
 
 protocol TrackRecordingServiceProtocol: Observable {
     var currentTrack: Track? { get }
+    func clearTrack()
     func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError)
     func startTrack(at date: Date)
     @discardableResult

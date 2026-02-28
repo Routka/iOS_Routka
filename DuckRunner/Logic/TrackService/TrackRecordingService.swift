@@ -12,6 +12,10 @@ import UIKit.UIApplication
 /// Provides methods for starting, stopping, and updating a track as the user moves.
 @Observable
 final class TrackRecordingService: TrackRecordingServiceProtocol {
+    func clearTrack() {
+        self.currentTrack = nil
+    }
+    
     /// Publishes the current active track or nil if there is no ongoing session.
     var currentTrack: Track? = nil
   

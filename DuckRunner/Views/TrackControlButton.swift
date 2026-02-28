@@ -77,12 +77,11 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
         Button {
             self.vm.startTrack()
         } label: {
-            Text("Start")
+            Text("Start Recording")
                 .font(.title)
                 .bold()
                 .foregroundStyle(Color.primary)
                 .padding(8)
-                .frame(maxWidth: .infinity)
         }
         .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
         .id("startbutton")
@@ -100,12 +99,15 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
                 try? await self.vm.stopTrack()
             }
         } label: {
-            Text("Stop")
+            HStack {
+                Image(systemName: "stop.circle")
+                Text("Recording")
+                    .bold()
+            }
                 .font(.title)
-                .bold()
+                
                 .foregroundStyle(Color.primary)
                 .padding(8)
-                .frame(maxWidth: .infinity)
         }
         .glassEffect(.regular.tint(.red.opacity(0.5)).interactive(), in: Capsule())
         .id("stopbutton")
@@ -115,8 +117,12 @@ struct TrackControlButton<ViewModel: TrackControllerProtocol>: View {
 /// A private, final class used exclusively for SwiftUI previews of `TrackControlButton`.
 @Observable
 final private class PreviewModel: TrackControllerProtocol {
+    let isReplaying: Bool
+    init(isReplaying: Bool) {
+        self.isReplaying = isReplaying
+    }
     func isReplayingTrack() -> Bool {
-        return true
+        return isReplaying
     }
     
     
@@ -129,5 +135,8 @@ final private class PreviewModel: TrackControllerProtocol {
 }
 
 #Preview {
-    TrackControlButton(vm: PreviewModel())
+    VStack {
+        TrackControlButton(vm: PreviewModel(isReplaying: true))
+        TrackControlButton(vm: PreviewModel(isReplaying: false))
+    }
 }
