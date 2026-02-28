@@ -23,22 +23,26 @@ extension MapContents {
 
 private struct StartPointView: View {
     let startPoint: TrackPoint
+
     
     var body: some View {
-        VStack(spacing: 5) {
-            HStack(spacing: 2) {
-                Image(systemName: "flag")
-                    .foregroundStyle(Color.green)
-                    .stroke(color: .black, width: 0.2)
-                Text("START")
-                    .stroke(color: .black, width: 1)
-            }
+        VStack(spacing: 4) {
+            Text("START")
+                .stroke(color: .black, width: 1)
             .bold()
-            Circle()
-                .fill(Color.cyan)
-                .stroke(.red, lineWidth: 2, antialiased: true)
-                .frame(width: 5, height: 5)
-                .offset(y: 2.5)
+            let unFilledAmount = 0.75
+            let degree = (180 - (360 - (360 * (unFilledAmount)))) / 2
+            ZStack {
+                Circle()
+                   .trim(from: 0.0,
+                         to: unFilledAmount)
+                   .stroke(Color.gray,
+                           style: .init(lineWidth: 4,
+                                        lineCap: .round))
+                   .rotationEffect(.degrees(180))
+                   .rotationEffect(.degrees((-degree)))
+            }
+               .frame(width: 30)
         }
     }
 }
