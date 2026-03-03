@@ -7,6 +7,8 @@
 import Combine
 import MapKit
 
+let locationServiceLogger = MainLogger("LocationService")
+
 final class LocationService: NSObject, CLLocationManagerDelegate, LocationServiceProtocol {
     public let location: PassthroughSubject<CLLocation, Never> = .init()
     // Publisher for authorization status changes
@@ -19,6 +21,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
         self.locationManager.distanceFilter = 8
         super.init()
         self.locationManager.delegate = self
+        locationServiceLogger.log("Initialized", .info)
 //        self.manageAuthorizationStatus(self.locationManager.authorizationStatus)
     }
 
@@ -30,6 +33,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     }
     
     public func requestLocationAccess() {
+        locationServiceLogger.log("Request Location Access has been envoked", .info)
         self.locationManager.requestWhenInUseAuthorization()
     }
     
@@ -37,18 +41,19 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
         self.authorizationStatus.send(status)
         switch status {
         case .authorizedWhenInUse, .authorizedAlways:
-            print("LOCATION: Location services authorized")
+            locationServiceLogger.log("Location use is granted", .info)
             self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
             self.locationManager.startUpdatingLocation()
             self.locationManager.startUpdatingHeading()
         case .notDetermined:
-            print("LOCATION: not determined")
+            locationServiceLogger.log("User location service is not determined", .info)
             // Prompt for authorization again if needed
             
         case .restricted, .denied:
-            print("LOCATION: Denied or restricted")
+            locationServiceLogger.log("User location service is denied to restricted!", .warning)
             break
         @unknown default:
+            locationServiceLogger.log("Unknown user authorization service status!", message: "Status: \(status)", .error)
             break
         }
     }
@@ -64,7 +69,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     
     // Handle authorization status changes
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("LOCATION: didChangeAuthorization")
+        locationServiceLogger.log("Authorization has changed", .info)
         manageAuthorizationStatus(status)
     }
 }

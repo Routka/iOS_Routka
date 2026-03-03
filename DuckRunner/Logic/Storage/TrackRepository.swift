@@ -11,11 +11,13 @@ import CoreData
 import os
 import Combine
 
+let trackRepositoryLogger = MainLogger("TrackRepository")
+
 let publicContainer = {
     let container = NSPersistentContainer(name: "CoreDataStorage")
     container.loadPersistentStores { _, error in
         if let error {
-            print("Failed loading container", error)
+            trackRepositoryLogger.log("Failed loading container", message: "\(error)", .error)
         }
     }
     return container
@@ -90,7 +92,7 @@ final class TrackRepository: TrackStorageProtocol {
                         }
                     }
                 } catch {
-                    print(error)
+                    trackRepositoryLogger.log("Failed deleting the track", message: error.localizedDescription, .error)
                 }
                 continuation.resume()
             }
@@ -116,7 +118,7 @@ final class TrackRepository: TrackStorageProtocol {
                         }
                     }
                 } catch {
-                    print(error)
+                    trackRepositoryLogger.log("Failed updating the track", message: error.localizedDescription, .error)
                 }
                 continuation.resume()
             }
@@ -138,7 +140,7 @@ final class TrackRepository: TrackStorageProtocol {
                     let dtos = items.compactMap { Track($0) }
                     continuation.resume(returning: dtos)
                 } catch {
-                    print(error)
+                    trackRepositoryLogger.log("Failed fetching the tracks", message: error.localizedDescription, .error)
                     continuation.resume(returning: [])
                 }
             }

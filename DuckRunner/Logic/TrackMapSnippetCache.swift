@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 
 
+
 protocol CacheFileManagerProtocol: Actor {
     func fileExists(atPath path: String) -> Bool
     func contents(atPath path: String) -> Data?
@@ -19,9 +20,8 @@ protocol CacheFileManagerProtocol: Actor {
 
 
 final actor CacheFileManager: CacheFileManagerProtocol {
-
+    let cacheFileManagerLogger = MainLogger("CacheFileManager")
     private let fileManager: FileManager
-    private(set) var writtenFiles: [String] = []
 
     init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
@@ -50,15 +50,11 @@ final actor CacheFileManager: CacheFileManagerProtocol {
                 withIntermediateDirectories: true
             )
 
-            if let options = attr {
-                try data.write(to: url, options: [.atomic])
-            } else {
-                try data.write(to: url)
-            }
-
-            writtenFiles.append(path)
+            try data.write(to: url, options: [.atomic])
         } catch {
-            assertionFailure("Failed to write cache file at \(path): \(error)")
+            cacheFileManagerLogger.log("Failed to write cache file ",
+                                       message: "at \(path): \(error)",
+                                       .error)
         }
     }
 
@@ -74,7 +70,9 @@ final actor CacheFileManager: CacheFileManagerProtocol {
             }
             return names.filter { $0.contains(substring) }
         } catch {
-            print("Failed to list directory at \(path): \(error)")
+            cacheFileManagerLogger.log("Failed to list directory",
+                                       message: "at \(path): \(error)",
+                                       .error)
             return []
         }
     }
