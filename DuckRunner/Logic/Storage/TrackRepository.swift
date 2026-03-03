@@ -107,8 +107,6 @@ final class TrackRepository: TrackStorageProtocol {
                 do {
                     if let item = try context.fetch(request).first {
                         item.points = NSSet(array: track.points.map({TrackPointDTO(context: context, $0)}))
-                        item.stopDate = track.stopDate
-                        item.startDate = track.startDate
                         item.parentID = track.parentID
                         item.type = track.type.rawValue
                         if context.hasChanges {

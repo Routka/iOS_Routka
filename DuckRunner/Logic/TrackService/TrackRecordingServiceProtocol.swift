@@ -10,6 +10,7 @@ import Combine
 import Foundation
 
 protocol TrackRecordingServiceProtocol: Observable {
+    var isRecording: Bool { get }
     var currentTrack: Track? { get }
     func clearTrack()
     func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError)

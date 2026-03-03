@@ -35,11 +35,6 @@ struct TrackCheckPoint: Equatable {
         let distanceToCheckpoint = receivedLocation.distance(from: checkpointLocation)
         let passed = distanceToCheckpoint < distanceThreshold
         
-        
-        
-        if printA{
-            print("VM: Checked checkpointDistance \(distanceToCheckpoint)")
-        }
         return passed
     }
     

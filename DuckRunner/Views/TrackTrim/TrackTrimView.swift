@@ -86,8 +86,6 @@ struct TrackTrimView: View {
                                 Task {
                                     var track = self.track
                                     track.points = trimmedTrack
-                                    track.startDate = trimmedTrack.first?.date ?? Date()
-                                    track.stopDate = trimmedTrack.last?.date
                                     do {
                                         try await dependencies.storageService.updateTrack(track)
                                         dependencies.routers[dependencies.tabRouter.selectedTab]?
@@ -111,8 +109,6 @@ struct TrackTrimView: View {
                                 Task {
                                     let NewTrack = Track(id: UUID().uuidString,
                                                       points: trimmedTrack,
-                                                      startDate: trimmedTrack.first?.date ?? Date(),
-                                                      stopDate: trimmedTrack.last?.date,
                                                       parentID: nil)
                                     do {
                                         try await dependencies.storageService.addTrack(NewTrack)

@@ -15,9 +15,14 @@ struct Track: Codable, Hashable, Identifiable {
     /// The sequence of recorded location points that form this track.
     var points: [TrackPoint]
     /// The starting date and time of the track.
-    var startDate: Date
+    var startDate: Date {
+        return self.points.first?.date ?? .now
+    }
     /// The end date and time of the track, if stopped.
-    var stopDate: Date?
+    var stopDate: Date? {
+        guard self.points.count > 1 else { return nil }
+        return self.points.last?.date
+    }
     /// id of a parent track
     var parentID: String?
     
@@ -30,10 +35,10 @@ struct Track: Codable, Hashable, Identifiable {
     
     /// Initializes a new Track with provided points and time range.
     init(id: String = UUID().uuidString,
-         points: [TrackPoint] = [], startDate: Date, stopDate: Date? = nil, parentID: String? = nil) {
+         points: [TrackPoint] = [], parentID: String? = nil) {
         self.points = points
-        self.startDate = startDate
-        self.stopDate = stopDate
+//        self.startDate = startDate
+//        self.stopDate = stopDate
         self.id = id
         self.parentID = parentID
     }

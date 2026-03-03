@@ -38,7 +38,6 @@ struct TrackLiveInfoView: View {
         .frame(maxWidth: .infinity)
         .glassEffect(in: RoundedRectangle(cornerRadius: 30))
         
-        .animation(.bouncy, value: track.stopDate == nil)
     }
     
 }

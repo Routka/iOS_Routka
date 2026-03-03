@@ -21,8 +21,6 @@ extension Track {
         }) ?? []
         self.points = points
             .sorted(by: {$0.date < $1.date})
-        self.startDate = track.startDate ?? .now
-        self.stopDate = track.stopDate
         self.id = track.id ?? UUID().uuidString
         self.parentID = track.parentID
         if let type = track.type,
@@ -52,8 +50,6 @@ extension TrackDTO {
                      _ track: Track) {
         self.init(context: context)
         self.id = track.id
-        self.startDate = track.startDate
-        self.stopDate = track.stopDate
         self.points = NSSet(array: track.points.map({TrackPointDTO(context: context, $0)}))
         self.parentID = track.parentID
         self.type = track.type.rawValue
