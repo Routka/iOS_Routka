@@ -44,10 +44,7 @@ struct MapSnippetView: View {
     
     @State private var mapSnippetImage: UIImage?
     private var mapSnippet: some View {
-        LinearGradient(colors: [.init(white: 0.2), .init(white: 0.1),
-            .init(white: 0.15)],
-                       startPoint: .topLeading,
-                       endPoint: .topTrailing)
+        SkeletonImage()
             .background {
                 GeometryReader { geo in
                     Color.clear
