@@ -32,11 +32,7 @@ struct MapSnippetView: View {
     
     var body: some View {
         mapSnippet
-            .onAppear {
-                print("SNIPPER FOR \(track.id) APPEARED")
-            }
             .onDisappear {
-                print("SNIPPER FOR \(track.id) DISSAPEARED")
                 self.mapSnippetImage = nil
                 self.imageLoadingTask?.cancel()
             }
@@ -49,23 +45,17 @@ struct MapSnippetView: View {
                 GeometryReader { geo in
                     Color.clear
                         .onAppear {
-                            guard mapSnippetImage == nil else {
-                                print("CANCELED")
-                                return }
+                            guard mapSnippetImage == nil else { return }
                             imageLoadingTask = Task {
                                 if let cachedImage = await mapSnippetCache.getSnippet(for: track, size: geo.size) {
-                                    guard !Task.isCancelled else {
-                                        print("CANCELED")
-                                        return }
+                                    guard !Task.isCancelled else { return }
                                     await MainActor.run {
                                         withAnimation {
                                             self.mapSnippetImage = cachedImage
                                         }
                                     }
                                 } else {
-                                    guard !Task.isCancelled else {
-                                        print("CANCELED")
-                                        return }
+                                    guard !Task.isCancelled else { return }
                                     await generateMapImage(size: geo.size)
                                 }
                             }
