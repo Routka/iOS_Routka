@@ -12,9 +12,11 @@ import Foundation
 protocol TrackRecordingServiceProtocol: Observable {
     var isRecording: Bool { get }
     var currentTrack: Track? { get }
+    var stopPolicy: RecordingAutoStopPolicy { get }
     func clearTrack()
-    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError)
-    func startTrack(at date: Date)
     @discardableResult
-    func stopTrack(at date: Date) throws(TrackServiceError) -> Track
+    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction
+    func startTrack(_ stopPolicy: RecordingAutoStopPolicy)
+    @discardableResult
+    func stopTrack() throws(TrackServiceError) -> Track
 }

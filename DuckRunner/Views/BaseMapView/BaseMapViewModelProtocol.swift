@@ -19,7 +19,7 @@ protocol BaseMapViewModelProtocol: Observable, TrackControllerProtocol, Location
     var trackRecordingService: any TrackRecordingServiceProtocol { get }
     var replayValidator: TrackReplayValidator? { get }
     /// Begins a new track recording session.
-    func startTrack()
+    func startTrack(_ mode: RecordingAutoStopPolicy)
     /// Ends the current track recording session, throwing if there is no active track.
     func stopTrack() async throws
     /// Remove selected track from replaying

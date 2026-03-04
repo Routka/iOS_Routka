@@ -75,7 +75,7 @@ struct TrackControlButton: View {
     /// - Assigned an explicit id `"startbutton"` for SwiftUI identity during transitions.
     private var startBigButton: some View {
         Button {
-            self.vm.startTrack()
+            self.vm.startTrack(.manual)
         } label: {
             Text("Start Recording")
                 .font(.title)
@@ -84,6 +84,7 @@ struct TrackControlButton: View {
                 .foregroundStyle(Color.white)
                 .padding(8)
                 .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity)
         }
         .glassEffect(.regular.tint(.green
             .mix(with: .primary, by: 0.1)
@@ -114,6 +115,7 @@ struct TrackControlButton: View {
                 .foregroundStyle(Color.white)
                 .padding(8)
                 .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity)
         }
         .glassEffect(.regular.tint(.red
             .mix(with: .primary, by: 0.1)
@@ -135,7 +137,7 @@ final private class PreviewModel: TrackControllerProtocol {
     }
     
     
-    func startTrack() {
+    func startTrack(_ mode: RecordingAutoStopPolicy) {
     }
     
     func stopTrack() {

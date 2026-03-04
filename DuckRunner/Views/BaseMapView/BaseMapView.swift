@@ -15,6 +15,9 @@ struct BaseMapView: View {
     @State private var vm: any BaseMapViewModelProtocol
     /// User's preferred unit for speed display (persisted in app storage).
     @AppStorage("speedunit") var speedUnit: String = "km/h"
+    
+    @State private var showMeasuredTracksSelector = false
+    
     private let dependencies: DependencyManager
     /// Creates a new map view bound to the provided view model instance.
     init(vm: any BaseMapViewModelProtocol,
@@ -71,6 +74,9 @@ struct BaseMapView: View {
         .animation(.bouncy, value: vm.trackRecordingService.currentTrack != nil)
         .animation(.default, value: vm.replayValidator?.track != nil)
         .animation(.default, value: vm.locationAccess.isAuthorized())
+        .sheet(isPresented: $showMeasuredTracksSelector) {
+            TrackPresetsView(vm: vm, dependencies: dependencies)
+        }
     }
     
     @ViewBuilder
@@ -98,10 +104,26 @@ struct BaseMapView: View {
                     TrackLiveInfoView(track: track, unit: unitSpeed)
                 }
                 if vm.trackControlMode != .hidden {
-                    TrackControlButton(vm: vm)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .disabled(vm.trackControlMode == .unavailable)
-                        .opacity(vm.trackControlMode == .available ? 1 : 0.6)
+                    HStack {
+                        if !vm.isRecordingTrack() {
+                            Button {
+                                self.showMeasuredTracksSelector.toggle()
+                            } label: {
+                                Image(systemName: "gauge.with.dots.needle.bottom.50percent.badge.plus")
+                                    .font(.title)
+                                    .bold()
+                                    .shadow(radius: 5)
+                                    .foregroundStyle(Color.primary)
+                                    .padding(8)
+                            }
+                            .glassEffect(.clear
+                                .interactive(), in: Circle())
+                        }
+                        TrackControlButton(vm: vm)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .disabled(vm.trackControlMode == .unavailable)
+                            .opacity(vm.trackControlMode == .available ? 1 : 0.6)
+                    }
                 }
                     
             } else {
@@ -116,7 +138,7 @@ import Combine
 @Observable
 private final class PreviewModel: BaseMapViewModelProtocol {
     func isRecordingTrack() -> Bool {
-        return true
+        return false
     }
     
     var mapMode: MapViewMode = .free(.filledTrack)
@@ -131,7 +153,7 @@ private final class PreviewModel: BaseMapViewModelProtocol {
     
     var replayValidator: TrackReplayValidator? = nil
     
-    func startTrack() {
+    func startTrack(_ mode: RecordingAutoStopPolicy) {
     }
     
     func stopTrack() async throws {

@@ -10,12 +10,6 @@ import CoreLocation
 import SwiftUI
 
 let replayValidatorLogger = MainLogger.init("TrackReplayValidator")
-enum SuggestedRecordingAction {
-    case allow
-    case forbid
-    case immediate
-}
-
 
 /// Coordinates validation of a user's replayed route against a recorded track.
 ///

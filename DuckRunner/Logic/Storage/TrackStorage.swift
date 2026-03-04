@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 /// Enumerates the storage operations that can occur to a track (creation, deletion, update).
-enum StorageAction {
+enum TrackStorageAction {
     /// Indicates a track was created.
     case created(Track)
     /// Indicates a track was deleted.
@@ -31,7 +31,7 @@ protocol TrackStorageProtocol {
     /// Updates the specified track in storage.
     func updateTrack(_ track: Track) async throws
     /// Publisher that notifies about storage actions performed on tracks.
-    var actionPublisher: PassthroughSubject<StorageAction, Never> { get }
+    var actionPublisher: PassthroughSubject<TrackStorageAction, Never> { get }
     func getTrack(by id: String) async -> Track?
     func getTracks(withParentID parent: String) async -> [Track]
 }

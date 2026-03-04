@@ -16,6 +16,7 @@ extension DependencyManager {
         let mapSnippetCache = TrackMapSnippetCache(fileManager: cacheFileManager)
         let trackReplayCoordinator = TrackReplayCoordinator()
         let tabRouter = TabRouter()
+        let measuredTrackStorageService = MeasuredTrackRepository()
         let routers = Dictionary(uniqueKeysWithValues: tabs.map({($0, Router())}))
         
         return .init(locationService: locationService,
@@ -25,6 +26,7 @@ extension DependencyManager {
                      trackReplayCoordinator:trackReplayCoordinator,
                      tabRouter: tabRouter,
                      cacheFileManager: cacheFileManager,
+                     measuredTrackStorageService: measuredTrackStorageService,
                      routers: routers)
     }
 }

@@ -15,13 +15,16 @@ struct DuckRunnerApp: App {
     private let dependencies: DependencyManager
     private let baseMapViewModel: BaseMapViewModel
     private let trackHistoryViewModel: TrackHistoryViewModel
+    private let measurementsViewModel: any MeasuredTrackListViewModelProtocol
     init() {
         self.dependencies = .production(tabs: [
             "History",
+            "Measurements"
                                               ])
         self.tabRouter = dependencies.tabRouter
         self.baseMapViewModel = BaseMapViewModel(dependencies: dependencies)
         self.trackHistoryViewModel = TrackHistoryViewModel(dependencies: dependencies)
+        self.measurementsViewModel = MeasuredTrackListViewModel(dependencies: dependencies)
     }
     
     
@@ -44,6 +47,16 @@ struct DuckRunnerApp: App {
                         Label("History", systemImage: "book.pages")
                     }
                     .tag("History")
+                }
+                if let router = dependencies.routers["Measurements"] {
+                    NavigatableView(router) {
+                        MeasuredTrackListView(vm: measurementsViewModel,
+                                              dependencies: dependencies)
+                    }
+                    .tabItem {
+                        Label("Measurements", systemImage: "book.pages")
+                    }
+                    .tag("Measurements")
                 }
                 SettingsView(dependencies: dependencies)
                 .tabItem {

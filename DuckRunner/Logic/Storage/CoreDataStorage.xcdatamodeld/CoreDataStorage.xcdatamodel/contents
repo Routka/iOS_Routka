@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25C56" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="MeasuredTrackDTO" representedClassName="MeasuredTrackDTO" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="trackID" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="value" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
     <entity name="TrackDTO" representedClassName="TrackDTO" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="String"/>
         <attribute name="parentID" optional="YES" attributeType="String"/>
         <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="792937740" usesScalarValueType="NO"/>
         <attribute name="stopDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="type" optional="YES" attributeType="String"/>
-        <relationship name="points" toMany="YES" deletionRule="Nullify" destinationEntity="TrackPointDTO"/>
+        <relationship name="points" toMany="YES" deletionRule="Nullify" destinationEntity="TrackPointDTO" inverseName="track" inverseEntity="TrackPointDTO"/>
     </entity>
     <entity name="TrackPointDTO" representedClassName="TrackPointDTO" syncable="YES" codeGenerationType="class">
         <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="latitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="longitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="speed" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="track" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrackDTO" inverseName="points" inverseEntity="TrackDTO"/>
     </entity>
 </model>

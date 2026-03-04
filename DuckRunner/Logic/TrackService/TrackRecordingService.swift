@@ -12,18 +12,17 @@ import UIKit.UIApplication
 /// Provides methods for starting, stopping, and updating a track as the user moves.
 @Observable
 final class TrackRecordingService: TrackRecordingServiceProtocol {
-    func clearTrack() {
-        self.currentTrack = nil
-        self.isRecording = false
-    }
     
     /// Publishes the current active track or nil if there is no ongoing session.
-    var currentTrack: Track? = nil
+    private(set) var currentTrack: Track? = nil
+    private(set) var stopPolicy: RecordingAutoStopPolicy = .manual
   
     private(set) var isRecording: Bool = false
     
     /// Appends a new point to the current track if recording is active.
-    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) {
+    /// returns a suggested action to stop or continue the recording based on provided autostop policy
+    @discardableResult
+    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction {
         guard currentTrack != nil else {
             throw.noCurrentTrack
         }
@@ -32,19 +31,38 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         }
         
         self.currentTrack?.points.append(point)
+        
+        switch self.stopPolicy.type {
+        case .manual:
+            return .allow
+        case .reachingSpeed(let cLLocationSpeed):
+            if point.speed >= cLLocationSpeed {
+                return .immediate
+            } else {
+                return .allow
+            }
+        case .reachingDistance(let cLLocationDistance):
+            if let totalDistance = self.currentTrack?.points.totalDistance(),
+               totalDistance >= cLLocationDistance {
+                return .immediate
+            } else {
+                return .allow
+            }
+        }
     }
     
     /// Begins a new track recording session at the specified date.
-    func startTrack(at date: Date) {
+    func startTrack(_ stopPolicy: RecordingAutoStopPolicy = .manual) {
         self.currentTrack = .init(points: [])
+        self.stopPolicy = stopPolicy
         self.isRecording = true
         // Re-enable the idle timer after stopping the track
-        UIApplication.shared.isIdleTimerDisabled = false
+        UIApplication.shared.isIdleTimerDisabled = true
     }
     
     /// Stops the current track session at the specified date and marks it as finished.
     @discardableResult
-    func stopTrack(at date: Date) throws(TrackServiceError) -> Track {
+    func stopTrack() throws(TrackServiceError) -> Track {
         // Re-enable the idle timer after stopping the track
         UIApplication.shared.isIdleTimerDisabled = false
         guard let currentTrack = currentTrack else {
@@ -55,5 +73,8 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         return currentTrack
     }
     
-    
+    func clearTrack() {
+        self.currentTrack = nil
+        self.isRecording = false
+    }
 }

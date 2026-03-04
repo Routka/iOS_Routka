@@ -67,3 +67,39 @@ extension TrackPoint {
     }
 }
 
+extension MeasuredTrackDTO {
+    /// Conversion initializer for creating a Core Data MeasuredTrackDTO from a MeasuredTrack.
+    convenience init(context: NSManagedObjectContext,
+                     _ track: MeasuredTrack) {
+        self.init(context: context)
+        self.id = track.id
+        switch track.measurement.type {
+        case .manual:
+            self.type = "manual"
+            self.value = 0.0
+        case .reachingSpeed(let speed):
+            self.type = "speed"
+            self.value = speed
+        case .reachingDistance(let distance):
+            self.type = "distance"
+            self.value = distance
+        }
+        self.name = track.measurement.name
+        self.trackID = track.track.id
+    }
+}
+
+extension MeasuredTrack {
+    init(_ measuredDTO: MeasuredTrackDTO, _ trackDTO: TrackDTO) {
+        switch measuredDTO.type {
+        case "speed":
+            self.measurement = .reachingSpeed(measuredDTO.value, name: measuredDTO.name ?? "Speed")
+        case "distance":
+            self.measurement = .reachingDistance(measuredDTO.value, name: measuredDTO.name ?? "Speed")
+        default:
+            self.measurement = .manual
+        }
+        self.track = .init(trackDTO)
+        self.id = measuredDTO.id ?? UUID().uuidString
+    }
+}

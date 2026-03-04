@@ -51,7 +51,7 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
     }
     
     /// Handles updates from the storage (track creation, deletion, or update) to maintain the correct tracks list.
-    private func receiveAction(_ action: StorageAction) {
+    private func receiveAction(_ action: TrackStorageAction) {
         withAnimation {
             switch action {
             case .created(let track):

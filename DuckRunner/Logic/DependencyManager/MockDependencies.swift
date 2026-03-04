@@ -12,13 +12,14 @@ import SwiftUI
 
 extension DependencyManager {
     static func mock(locationService: any LocationServiceProtocol = MockLocationService(),
-        storageService: any TrackStorageProtocol = MockStorage(),
-        mapSnapshotGenerator: any MapSnapshotGeneratorProtocol = MockMapSnapshotGenerator(),
-        mapSnippetCache: any TrackMapSnippetCacheProtocol = MockTrackMapSnippetCache(),
-        trackReplayCoordinator: any TrackReplayCoordinatorProtocol = MockTrackReplayCoordinator(),
-        tabRouter: any TabRouterProtocol = MockTabRouter(),
-        cacheFileManager: any CacheFileManagerProtocol = MockCacheFileManager(),
-        routers: [String: Router] = [:]
+                     storageService: any TrackStorageProtocol = MockStorage(),
+                     mapSnapshotGenerator: any MapSnapshotGeneratorProtocol = MockMapSnapshotGenerator(),
+                     mapSnippetCache: any TrackMapSnippetCacheProtocol = MockTrackMapSnippetCache(),
+                     trackReplayCoordinator: any TrackReplayCoordinatorProtocol = MockTrackReplayCoordinator(),
+                     tabRouter: any TabRouterProtocol = MockTabRouter(),
+                     cacheFileManager: any CacheFileManagerProtocol = MockCacheFileManager(),
+                     measuredTrackStorageService: any MeasuredTrackStorageProtocol = MockMeasuredTrackStorageService(),
+                     routers: [String: Router] = [:]
     ) -> Self {
         self.init(locationService: locationService,
                   storageService: storageService,
@@ -27,12 +28,27 @@ extension DependencyManager {
                   trackReplayCoordinator: trackReplayCoordinator,
                   tabRouter: tabRouter,
                   cacheFileManager: cacheFileManager,
+                  measuredTrackStorageService: measuredTrackStorageService,
                   routers: routers)
     }
 }
 
 // MARK: - Mock default implementations
 extension DependencyManager {
+    final class MockMeasuredTrackStorageService: MeasuredTrackStorageProtocol {
+        var actionPublisher: PassthroughSubject<MeasuredTrackStorageAction, Never> = .init()
+        
+        func getMeasuredTracks() async -> [MeasuredTrack] {
+            return []
+        }
+        
+        func addMeasuredTrack(_ track: MeasuredTrack) async {
+        }
+        
+        func deleteMeasuredTrack(_ track: MeasuredTrack) async {
+        }
+    }
+    
     final class MockStorage: TrackStorageProtocol {
         func getTrack(by id: String) async -> Track? {
             return nil
@@ -59,7 +75,7 @@ extension DependencyManager {
         func updateTrack(_ track: Track) async throws {
         }
         
-        var actionPublisher: PassthroughSubject<StorageAction, Never> = .init()
+        var actionPublisher: PassthroughSubject<TrackStorageAction, Never> = .init()
     }
     
     final class MockLocationService: LocationServiceProtocol {

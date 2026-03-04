@@ -27,10 +27,10 @@ let publicContainer = {
 /// Implements TrackStorageProtocol for CRUD operations and action publishing.
 final class TrackRepository: TrackStorageProtocol {
     /// Publishes storage actions (creation, deletion, update) to notify observers of changes.
-    var actionPublisher: PassthroughSubject<StorageAction, Never> = .init()
+    var actionPublisher: PassthroughSubject<TrackStorageAction, Never> = .init()
     
     /// Sends a storage action event through the publisher.
-    internal func sendAction(_ action: StorageAction) {
+    internal func sendAction(_ action: TrackStorageAction) {
         actionPublisher.send(action)
     }
     
