@@ -12,11 +12,10 @@ import UIKit.UIApplication
 /// Provides methods for starting, stopping, and updating a track as the user moves.
 @Observable
 final class TrackRecordingService: TrackRecordingServiceProtocol {
-    
     /// Publishes the current active track or nil if there is no ongoing session.
     private(set) var currentTrack: Track? = nil
     private(set) var stopPolicy: RecordingAutoStopPolicy = .manual
-  
+    private(set) var stopPolicyProgress: Double = 0.0
     private(set) var isRecording: Bool = false
     
     /// Appends a new point to the current track if recording is active.
@@ -36,15 +35,20 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         case .manual:
             return .allow
         case .reachingSpeed(let cLLocationSpeed):
+            self.stopPolicyProgress = max(0, min(1, point.speed/cLLocationSpeed))
             if point.speed >= cLLocationSpeed {
                 return .immediate
             } else {
                 return .allow
             }
         case .reachingDistance(let cLLocationDistance):
-            if let totalDistance = self.currentTrack?.points.totalDistance(),
-               totalDistance >= cLLocationDistance {
-                return .immediate
+            if let totalDistance = self.currentTrack?.points.totalDistance() {
+                self.stopPolicyProgress = max(0, min(1, totalDistance/cLLocationDistance))
+                if totalDistance >= cLLocationDistance {
+                    return .immediate
+                } else {
+                    return .allow
+                }
             } else {
                 return .allow
             }
@@ -55,6 +59,7 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
     func startTrack(_ stopPolicy: RecordingAutoStopPolicy = .manual) {
         self.currentTrack = .init(points: [])
         self.stopPolicy = stopPolicy
+        self.stopPolicyProgress = 0.0
         self.isRecording = true
         // Re-enable the idle timer after stopping the track
         UIApplication.shared.isIdleTimerDisabled = true

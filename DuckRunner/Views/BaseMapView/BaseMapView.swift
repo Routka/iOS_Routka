@@ -96,10 +96,38 @@ struct BaseMapView: View {
         }
     }
     
+    
+    private func measureInfoTag(_ measurement: RecordingAutoStopPolicy) -> some View {
+        let progress = vm.trackRecordingService.stopPolicyProgress
+        return HStack {
+            Image(systemName: measurement.image)
+                .foregroundStyle(Color.mint)
+            if progress < 1 {
+                Text("Measuring")
+            }
+            Text(measurement.name)
+                .bold()
+            CircularProgressView(progress: progress)
+                .frame(width: 20)
+        }
+        .animation(.bouncy, value: progress)
+    }
 
     private var controls: some View {
         VStack {
             if vm.locationAccess.isAuthorized() {
+                let measurement = vm.trackRecordingService.stopPolicy
+                if measurement.type != .manual {
+                    let view = measureInfoTag(measurement)
+                    // extremely stupid workaround because glass makes colors in CircularProgressView semi transparent
+                    view
+                        .opacity(.ulpOfOne)
+                    .padding(8)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 30))
+                    .overlay {
+                        view
+                    }
+                }
                 if let track = vm.trackRecordingService.currentTrack {
                     let unitSpeed = UnitSpeed.byName(speedUnit)
                     TrackLiveInfoView(track: track, unit: unitSpeed)
@@ -136,10 +164,38 @@ struct BaseMapView: View {
 }
 
 import Combine
+
+@Observable
+private final class MockTrackRecorder: TrackRecordingServiceProtocol {
+    var stopPolicyProgress: Double = 1
+    
+    var isRecording: Bool = true
+    
+    var currentTrack: Track? = .filledTrack
+    
+    var stopPolicy: RecordingAutoStopPolicy = .reachingDistance(30, name: "30-100mkh")
+    
+    func clearTrack() {
+    }
+    
+    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction {
+        return .allow
+    }
+    
+    func startTrack(_ stopPolicy: RecordingAutoStopPolicy) {
+    }
+    
+    func stopTrack() throws(TrackServiceError) -> Track {
+        return .filledTrack
+    }
+    
+    
+}
+
 @Observable
 private final class PreviewModel: BaseMapViewModelProtocol {
     func isRecordingTrack() -> Bool {
-        return false
+        return true
     }
     
     var mapMode: MapViewMode = .free(.filledTrack)
@@ -150,7 +206,7 @@ private final class PreviewModel: BaseMapViewModelProtocol {
     
     var locationAccess: CLAuthorizationStatus = .authorizedWhenInUse
     
-    var trackRecordingService: any TrackRecordingServiceProtocol = TrackRecordingService()
+    var trackRecordingService: any TrackRecordingServiceProtocol = MockTrackRecorder()
     
     var replayValidator: TrackReplayValidator? = nil
     

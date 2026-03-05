@@ -13,6 +13,7 @@ protocol TrackRecordingServiceProtocol: Observable {
     var isRecording: Bool { get }
     var currentTrack: Track? { get }
     var stopPolicy: RecordingAutoStopPolicy { get }
+    var stopPolicyProgress: Double { get }
     func clearTrack()
     @discardableResult
     func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction
