@@ -6,20 +6,17 @@
 //
 import SwiftUI
 
-private struct MeasuredTrackCellView: View {
+struct MeasuredTrackCellView: View {
     let measured: MeasuredTrack
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
                 type
-                Spacer()
-                duration
+                date
             }
-            
-            
-            date
-            
+            Spacer()
+            duration
         }
     }
     
@@ -56,5 +53,11 @@ private struct MeasuredTrackCellView: View {
             }
             
         }
+    }
+}
+
+#Preview {
+    List {
+        MeasuredTrackCellView(measured: .init(id: "", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack))
     }
 }
