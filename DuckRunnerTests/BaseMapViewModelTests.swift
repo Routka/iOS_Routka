@@ -5,6 +5,9 @@ import CoreLocation
 @testable import DuckRunner
 
 final class MockTrackService: TrackRecordingServiceProtocol {
+    var stopPolicy: DuckRunner.RecordingAutoStopPolicy = .manual
+    
+    var stopPolicyProgress: Double = 1
     var isRecording: Bool = false
     
     func clearTrack() {
@@ -12,31 +15,31 @@ final class MockTrackService: TrackRecordingServiceProtocol {
     
     private(set) var currentTrack: DuckRunner.Track? = nil
     
-    private(set) var isActive = false
     
-    func startTrack(at date: Date) {
-        isActive = true
+    func startTrack(_ stopPolicy: DuckRunner.RecordingAutoStopPolicy) {
+        isRecording = true
         let new = Track(points: [])
         currentTrack = new
     }
     
-    func stopTrack(at date: Date) throws(DuckRunner.TrackServiceError) -> DuckRunner.Track {
+    func stopTrack() throws(DuckRunner.TrackServiceError) -> DuckRunner.Track {
         guard let current = currentTrack else {
             throw TrackServiceError.noCurrentTrack
         }
-        guard isActive else {
+        guard isRecording else {
             throw TrackServiceError.currentTrackIsFinished
         }
-        isActive = false
+        isRecording = false
         var updatedTrack = current
         currentTrack = updatedTrack
         return updatedTrack
     }
     
-    func appendTrackPosition(_ point: DuckRunner.TrackPoint) throws(DuckRunner.TrackServiceError) {
-        guard isActive, var track = currentTrack else { return }
+    func appendTrackPosition(_ point: DuckRunner.TrackPoint) throws(DuckRunner.TrackServiceError) -> DuckRunner.SuggestedRecordingAction {
+        guard isRecording, var track = currentTrack else { return .allow }
         track.points.append(point)
         currentTrack = track
+        return .allow
     }
 }
 
@@ -88,11 +91,10 @@ struct BaseMapViewModelTests {
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
 
         let start = Date()
-        await trackService.startTrack(at: start)
-
+        await trackService.startTrack(.manual)
         let trackOpt = await vm.trackRecordingService.currentTrack
         let track = try #require(trackOpt)
-        #expect(track.startDate == start)
+        #expect(trackService.isRecording)
         #expect(track.points.isEmpty)
     }
 
@@ -114,7 +116,7 @@ struct BaseMapViewModelTests {
         let secondOpt = await vm.trackRecordingService.currentTrack
         let second = try #require(secondOpt)
 
-        #expect(second.startDate >= first.startDate)
+        #expect(second.id != first.id)
         #expect(second.points.isEmpty)
     }
     
@@ -161,11 +163,11 @@ struct BaseMapViewModelTests {
         }
 
         // Start then stop
-        await vm.startTrack()
-        #expect(trackService.isActive)
+        await vm.startTrack(.manual)
+        #expect(trackService.isRecording)
         try await vm.stopTrack()
         
-        #expect(!trackService.isActive)
+        #expect(!trackService.isRecording)
     }
     
     @Test("Stop Action should throw if called twice")
@@ -174,11 +176,11 @@ struct BaseMapViewModelTests {
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
 
         // Start then stop
-        await vm.startTrack()
-        #expect(trackService.isActive)
+        await vm.startTrack(.manual)
+        #expect(trackService.isRecording)
         try await vm.stopTrack()
         
-        #expect(!trackService.isActive)
+        #expect(!trackService.isRecording)
         
         // Already stopped track should throw
         do {
@@ -337,30 +339,6 @@ struct BaseMapViewModelTests {
     
     
     // MARK: - Selecting speedtrap replay
-    final class TrackStartDetectMock: TrackRecordingServiceProtocol {
-        var isRecording: Bool = false
-        
-        func clearTrack() {
-        
-        }
-        
-        var startedTrack: Bool = false
-        var stopedTrack: Bool = false
-        var currentTrack: DuckRunner.Track? = nil
-        
-        func appendTrackPosition(_ point: DuckRunner.TrackPoint) throws(DuckRunner.TrackServiceError) {
-        }
-        
-        func startTrack(at date: Date) {
-            self.currentTrack = .emptyTrack
-            self.startedTrack = true
-        }
-        
-        func stopTrack(at date: Date) throws(DuckRunner.TrackServiceError) -> DuckRunner.Track {
-            stopedTrack = true
-            return .filledTrack
-        }
-    }
     
     /*
      selected speedtrap track to replay
@@ -370,7 +348,7 @@ struct BaseMapViewModelTests {
      */
     @Test("Speedtrap selection correct location should start")
     func testSpeedtrapTrackCloseStarting() async throws {
-        let trackService = TrackStartDetectMock()
+        let trackService = MockTrackService()
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
         
         var track = await Track.filledTrack
@@ -396,7 +374,7 @@ struct BaseMapViewModelTests {
                                   timestamp: .now)
         
         await vm.receivedLocationUpdate(location)
-        #expect(trackService.startedTrack)
+        #expect(trackService.isRecording)
     }
     
     /*
@@ -406,7 +384,7 @@ struct BaseMapViewModelTests {
     
     @Test("Speedtrap selection wrong location should not start")
     func testSpeedtrapTrackWrongLocationNotStarting() async throws {
-        let trackService = TrackStartDetectMock()
+        let trackService = MockTrackService()
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
         
         var track = await Track.filledTrack
@@ -432,7 +410,7 @@ struct BaseMapViewModelTests {
                                   timestamp: .now)
 
         await vm.receivedLocationUpdate(location)
-        #expect(trackService.startedTrack == false)
+        #expect(trackService.isRecording == false)
     }
     
     /*
@@ -443,7 +421,7 @@ struct BaseMapViewModelTests {
     
     @Test("Speedtrap selection correct location should stop")
     func testSpeedtrapTrackCorrectLocationStoping() async throws {
-        let trackService = TrackStartDetectMock()
+        let trackService = MockTrackService()
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
         
         var track = await Track.filledTrack
@@ -459,7 +437,7 @@ struct BaseMapViewModelTests {
         
         let startCoordinate = try #require(track.points.first?.position)
         
-        
+        #expect(!trackService.isRecording)
         let location = CLLocation(coordinate: startCoordinate,
                                   altitude: 0,
                                   horizontalAccuracy: 1,
@@ -469,9 +447,8 @@ struct BaseMapViewModelTests {
                                   timestamp: .now)
         
         await vm.receivedLocationUpdate(location)
-        #expect(trackService.startedTrack)
+        #expect(trackService.isRecording)
         
-        await trackService.startTrack(at: .now)
         let stopCoordinate = try #require(track.points.last?.position)
         
         let stopLocation = CLLocation(coordinate: stopCoordinate,
@@ -483,12 +460,12 @@ struct BaseMapViewModelTests {
                                   timestamp: .now)
         
         await vm.receivedLocationUpdate(stopLocation)
-        #expect(trackService.stopedTrack)
+        #expect(!trackService.isRecording)
     }
     
     @Test("Replaying track with checkpoints when track not started should not pass checkpoints") 
     func testNonStartedTrackIgnoresCheckpoints() async throws {
-        let trackService = TrackStartDetectMock()
+        let trackService = MockTrackService()
         let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
         
         var track = await Track.filledTrack
@@ -502,7 +479,7 @@ struct BaseMapViewModelTests {
         }
         #expect(track.id == replayValidator.track.id)
         
-        #expect(!trackService.startedTrack)
+        #expect(!trackService.isRecording)
         
         #expect(!replayValidator.checkpoints.isEmpty)
         
@@ -517,7 +494,7 @@ struct BaseMapViewModelTests {
         
         await vm.receivedLocationUpdate(checkpointLocation)
         
-        #expect(!trackService.startedTrack)
+        #expect(!trackService.isRecording)
         
         #expect(!replayValidator.checkpoints.contains(where: {$0.value.checkPointPassed}))
     }

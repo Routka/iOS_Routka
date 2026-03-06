@@ -111,6 +111,13 @@ final class TrackReplayValidator {
     ///
     /// - Parameter point: The latest user location sample expressed as a `TrackPoint`.
     func passedPoint(_ point: TrackPoint) async {
+        guard startReplayCheckpoint?.checkPointPassed == true else {
+            return
+        }
+        
+        guard stopReplayCheckpoint?.checkPointPassed == false else {
+            return
+        }
         let coordinate = point.position
         
         let checkpointsToCheck = checkpoints.map({$0.value})

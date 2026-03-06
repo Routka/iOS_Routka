@@ -16,6 +16,9 @@ extension Track {
 }
 // Mock FileManager that allows us to control file presence and content
 final actor MockFileManager: CacheFileManagerProtocol {
+    func removeAllTrackMapCacheFiles() async {
+    }
+    
     func fileNames(atPath path: String, containing substring: String) -> [String] {
         return []
     }
