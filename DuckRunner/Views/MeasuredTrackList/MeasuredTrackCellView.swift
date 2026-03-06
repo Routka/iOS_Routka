@@ -17,6 +17,8 @@ struct MeasuredTrackCellView: View {
             }
             Spacer()
             duration
+            Image(systemName: "chevron.right")
+                .foregroundStyle(Color.primary.opacity(0.6))
         }
     }
     
@@ -26,6 +28,7 @@ struct MeasuredTrackCellView: View {
                 .foregroundStyle(Color.accentColor)
             Text(measured.measurement.name)
                 .font(.headline)
+                .foregroundStyle(Color.primary)
         }
     }
     
@@ -37,7 +40,7 @@ struct MeasuredTrackCellView: View {
             Text(startDate, style: .time)
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(Color.secondary)
     }
     
     @ViewBuilder
@@ -47,7 +50,7 @@ struct MeasuredTrackCellView: View {
             HStack(spacing: 4) {
                 Text(TimeIntervalFormatter.string(from: duration) ?? "")
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.primary)
                 Image(systemName: "timer")
                     .foregroundStyle(Color.green.mix(with: .white, by: 0.2))
             }
@@ -58,6 +61,8 @@ struct MeasuredTrackCellView: View {
 
 #Preview {
     List {
-        MeasuredTrackCellView(measured: .init(id: "", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack))
+        Button{} label: {
+            MeasuredTrackCellView(measured: .init(id: "", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack))
+        }
     }
 }

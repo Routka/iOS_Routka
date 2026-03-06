@@ -36,8 +36,8 @@ extension Array where Element == TrackPoint {
         )
 
         let span = MKCoordinateSpan(
-            latitudeDelta: Swift.max((bounds.maxLat - bounds.minLat) * 2, 0.015),
-            longitudeDelta: Swift.max((bounds.maxLon - bounds.minLon) * 2, 0.05)
+            latitudeDelta:  (bounds.maxLat - bounds.minLat) * 1.5,
+            longitudeDelta: (bounds.maxLon - bounds.minLon) * 1.2
         )
 
         let region = MKCoordinateRegion(center: center, span: span)

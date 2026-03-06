@@ -8,8 +8,8 @@ import Foundation
 import CoreLocation
 
 /// Condition to auto stop the track recording
-struct RecordingAutoStopPolicy {
-    enum PolicyType: Equatable {
+struct RecordingAutoStopPolicy: Hashable {
+    enum PolicyType: Equatable, Hashable {
         case manual
         case reachingSpeed(CLLocationSpeed)
         case reachingDistance(CLLocationDistance)

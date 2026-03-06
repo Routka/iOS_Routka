@@ -13,7 +13,15 @@ struct MeasuredTrackListView: View {
     var body: some View {
         List {
             ForEach(viewModel.tracks, id: \.id) { measured in
-                MeasuredTrackCellView(measured: measured)
+                Button {
+                    Task {
+                        dependencies.routers[dependencies.tabRouter.selectedTab]?
+                            .push(.measuredTrackDetail(track: measured,
+                                                       dependencies: dependencies))
+                    }
+                } label: {
+                    MeasuredTrackCellView(measured: measured)
+                }
             }
             .onDelete(perform: delete)
         }

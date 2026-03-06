@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MeasuredTrack: Identifiable {
+struct MeasuredTrack: Identifiable, Hashable {
     let id: String
     let measurement: RecordingAutoStopPolicy
     let track: Track

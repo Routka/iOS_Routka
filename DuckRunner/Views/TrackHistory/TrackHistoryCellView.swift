@@ -73,7 +73,7 @@ struct TrackHistoryCellView: View {
         MapSnippetView(mapSnippetCache: mapSnippetCache,
                        mapSnapshotGenerator: mapSnapshotGenerator,
                        track: track)
-            .frame(height: 100)
+            .frame(height: 200)
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 0)
             
