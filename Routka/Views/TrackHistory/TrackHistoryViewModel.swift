@@ -19,6 +19,14 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
     /// The date currently selected by the user in the UI.
     @Published var selectedDate: Date = .now
     
+    /// Reference to the underlying storage mechanism for tracks.
+    private let storage: any TrackStorageProtocol
+    
+    /// Holds Combine cancellables for subscriptions.
+    private var cancellables: Set<AnyCancellable> = []
+    
+    
+    
     /// Creates a new view model instance and subscribes to storage actions and date selection changes.
     /// - Parameter dependencies: A dependency manager providing required services such as the track storage.
     init(dependencies: DependencyManager) {

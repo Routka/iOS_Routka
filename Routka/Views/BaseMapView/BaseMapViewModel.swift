@@ -160,7 +160,7 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         guard let replayValidator else { return }
         
         // Still not recording
-        if self.trackRecordingService.currentTrack == nil {
+        if self.trackRecordingService.isRecording == false {
             switch replayValidator.suggestedStartRecording(location) {
             case .allow:
                 self.trackControlMode = .available
@@ -202,7 +202,7 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
             _ = try? self.trackRecordingService.stopTrack()
             self.replayValidator = .init(replayingTrack: track,
                                          checkPointInterval: SettingsService.shared.checkpointDistanceInterval)
-            
+            self.trackRecordingService.clearTrack()
             self.trackControlMode = .unavailable
             
         case .deselect:

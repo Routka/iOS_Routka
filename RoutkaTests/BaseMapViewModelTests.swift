@@ -11,10 +11,16 @@ final class MockTrackService: TrackRecordingServiceProtocol {
     var isRecording: Bool = false
     
     func clearTrack() {
+        self.currentTrack = nil
+        self.isRecording = false
     }
     
     private(set) var currentTrack: Routka.Track? = nil
     
+    func setRecordedTrack(_ track: Track) {
+        self.currentTrack = track
+        self.isRecording = false
+    }
     
     func startTrack(_ stopPolicy: Routka.RecordingAutoStopPolicy) {
         isRecording = true
@@ -499,5 +505,76 @@ struct BaseMapViewModelTests {
         #expect(!replayValidator.checkpoints.contains(where: {$0.value.checkPointPassed}))
     }
      
+    
+    // https://github.com/Routka/iOS_Routka/issues/27
+    @Test("Replaying track when there is a finished recorded track on screen should clear track and react to checkpoints correctly")
+    func testReplayNotStartedWithTrackOnScreen() async throws {
+        let trackService = MockTrackService()
+        let vm = await BaseMapViewModel(dependencies: .mock(), trackRecordingService: trackService)
+        
+        // Emulating that we just recorded some track manually
+        await trackService.setRecordedTrack(.filledTrack)
+        
+        // configuring track which we are going to replay
+        var trackWhichReplaying = await Track.filledTrack
+        await trackWhichReplaying.changeType(to: .speedtrap)
+        #expect(trackWhichReplaying.type == .speedtrap)
+        
+        // Sending track
+        await vm.receiveReplayTrackAction(TrackReplayAction.select(trackWhichReplaying))
+        guard let replayValidator = await vm.replayValidator else {
+            Issue.record("ReplayValidator should not be nil")
+            return
+        }
+        // confirming that replay Validator is configured and we dropped recorded track from history
+        #expect(trackWhichReplaying.id == replayValidator.track.id)
+        #expect(trackService.currentTrack == nil)
+        
+        let startCoordinate = try #require(trackWhichReplaying.points.first?.position)
+        
+        // Confirming autostart of replay in correct location
+        #expect(!trackService.isRecording)
+        let location = CLLocation(coordinate: startCoordinate,
+                                  altitude: 0,
+                                  horizontalAccuracy: 1,
+                                  verticalAccuracy: 1,
+                                  course: 0,
+                                  speed: 20,
+                                  timestamp: .now)
+        
+        await vm.receivedLocationUpdate(location)
+        #expect(trackService.isRecording)
+        
+        // Passing all the checkpoints
+        for checkpoint in await replayValidator.checkpoints {
+            let checkpointLocation = await CLLocation(coordinate: checkpoint.value.point.position,
+                                          altitude: 0,
+                                          horizontalAccuracy: 1,
+                                          verticalAccuracy: 1,
+                                          course: 0,
+                                          speed: 20,
+                                          timestamp: .now)
+            await vm.receivedLocationUpdate(checkpointLocation)
+            
+        }
+        
+        await #expect(replayValidator.trackCompletionByCheckpoints() == 1.0)
+        #expect(trackService.isRecording)
+        
+        
+        // stopping the replay by passing the stopcheckpoint
+        let stopCoordinate = try #require(trackWhichReplaying.points.last?.position)
+        
+        let stopLocation = CLLocation(coordinate: stopCoordinate,
+                                  altitude: 0,
+                                  horizontalAccuracy: 1,
+                                  verticalAccuracy: 1,
+                                  course: 0,
+                                  speed: 20,
+                                  timestamp: .now)
+        
+        await vm.receivedLocationUpdate(stopLocation)
+        #expect(!trackService.isRecording)
+    }
 }
 
