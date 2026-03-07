@@ -58,15 +58,15 @@ extension DependencyManager {
             return nil
         }
         
-        func getTracks(withParentID parent: String) async -> [Track] {
+        func getTracks(withParentID parent: String, ofType trackType: TrackType) async -> [Track] {
             return []
         }
         
-        func getTracks(for date: Date) async -> [Track] {
+        func getTracks(for date: Date, ofType trackType: TrackType) async -> [Track] {
             return []
         }
         
-        func getAllTracks() async -> [Track] {
+        func getAllTracks(ofType trackType: TrackType) async -> [Track] {
             return []
         }
         

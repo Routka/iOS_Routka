@@ -21,9 +21,9 @@ enum TrackStorageAction {
 /// Defines CRUD methods and a publisher for storage action events.
 protocol TrackStorageProtocol {
     /// Retrieves all tracks that start on the given date.
-    func getTracks(for date: Date) async -> [Track]
+    func getTracks(for date: Date, ofType trackType: TrackType) async -> [Track]
     /// Retrieves all tracks in storage.
-    func getAllTracks() async -> [Track]
+    func getAllTracks(ofType trackType: TrackType) async -> [Track]
     /// Adds a new track to storage.
     func addTrack(_ track: Track) async throws
     /// Deletes the specified track from storage.
@@ -33,5 +33,5 @@ protocol TrackStorageProtocol {
     /// Publisher that notifies about storage actions performed on tracks.
     var actionPublisher: PassthroughSubject<TrackStorageAction, Never> { get }
     func getTrack(by id: String) async -> Track?
-    func getTracks(withParentID parent: String) async -> [Track]
+    func getTracks(withParentID parent: String, ofType trackType: TrackType) async -> [Track]
 }

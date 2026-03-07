@@ -134,7 +134,7 @@ final class TrackReplayValidator {
     }
     
     func suggestedStartRecording(_ location: CLLocation) -> SuggestedRecordingAction {
-        switch track.type {
+        switch track.replayMode {
         case .classical:
             // If replaying classical track
             // in startPoint

@@ -48,7 +48,7 @@ final class TrackDetailViewModel: ObservableObject {
                     self.parentTrack = parent
                 }
             } else {
-                let children = await storageService.getTracks(withParentID: track.id)
+                let children = await storageService.getTracks(withParentID: track.id, ofType: .record)
                 await MainActor.run {
                     self.children = children
                 }

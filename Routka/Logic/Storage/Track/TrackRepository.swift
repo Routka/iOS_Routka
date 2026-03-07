@@ -127,13 +127,13 @@ final class TrackRepository: TrackStorageProtocol {
     }
     
     /// Retrieves all tracks from storage, sorted by start date.
-    func getAllTracks() async -> [Track] {
+    func getAllTracks(ofType trackType: TrackType = .record) async -> [Track] {
         let context = self.backgroundContext
         return await withCheckedContinuation { [context] continuation in
             context.performAndWait {
                 
                 let request = TrackDTO.fetchRequest()
-                request.predicate = NSPredicate(format: "trackType == \(TrackType.record.rawValue)")
+                request.predicate = NSPredicate(format: "trackType == \(trackType.rawValue)")
                 request.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
                 
                 do {
@@ -149,7 +149,7 @@ final class TrackRepository: TrackStorageProtocol {
     }
     
     /// Retrieves tracks that start on a specific date.
-    func getTracks(for date: Date) async -> [Track] {
+    func getTracks(for date: Date, ofType trackType: TrackType = .record) async -> [Track] {
         let context = self.backgroundContext
         return await withCheckedContinuation { [context] continuation in
             context.performAndWait {
@@ -159,7 +159,7 @@ final class TrackRepository: TrackStorageProtocol {
                 let datePredicate = NSPredicate(format: "startDate >= %@ && startDate <= %@",
                                                 Calendar.current.startOfDay(for: date) as NSDate,
                                                 Calendar.current.startOfDay(for: nextDay) as NSDate)
-                let measureNilPredicate = NSPredicate(format: "trackType == \(TrackType.record.rawValue)")
+                let measureNilPredicate = NSPredicate(format: "trackType == \(trackType.rawValue)")
                 request.predicate = NSCompoundPredicate(type: .and, subpredicates: [datePredicate, measureNilPredicate])
                 request.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
                 let tracks = (try? context.fetch(request)) ?? []
@@ -169,14 +169,14 @@ final class TrackRepository: TrackStorageProtocol {
     }
     
     /// Retrieves tracks that have specific parent
-    func getTracks(withParentID parent: String) async -> [Track] {
+    func getTracks(withParentID parent: String, ofType trackType: TrackType = .record) async -> [Track] {
         let context = self.backgroundContext
         return await withCheckedContinuation { [context] continuation in
             context.performAndWait {
                 
                 let request: NSFetchRequest<TrackDTO> = TrackDTO.fetchRequest()
                 let parentPredicate = NSPredicate(format: "parentID == %@", parent)
-                let measureNilPredicate = NSPredicate(format: "trackType == \(TrackType.record.rawValue)")
+                let measureNilPredicate = NSPredicate(format: "trackType == \(trackType.rawValue)")
                 request.predicate = NSCompoundPredicate(type: .and, subpredicates: [parentPredicate, measureNilPredicate])
                 
                 let tracks = (try? context.fetch(request)) ?? []

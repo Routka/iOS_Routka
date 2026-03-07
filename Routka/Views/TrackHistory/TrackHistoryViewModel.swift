@@ -41,7 +41,7 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
             .sink { date in
                 Task.detached { [weak self] in
                     guard let self else { return }
-                    let tracks = await self.storage.getTracks(for: date)
+                    let tracks = await self.storage.getTracks(for: date, ofType: .record)
                     await MainActor.run {
                         withAnimation {
                             self.tracks = tracks
