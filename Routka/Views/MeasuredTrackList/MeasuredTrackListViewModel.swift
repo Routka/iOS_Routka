@@ -1,8 +1,11 @@
 import SwiftUI
 import Combine
 
+/// A view model responsible for managing a list of measured tracks.
+/// It handles loading, updating, and deleting tracks while synchronizing with the underlying storage.
 @Observable
 final class MeasuredTrackListViewModel: MeasuredTrackListViewModelProtocol {
+    /// The list of currently loaded measured tracks.
     private(set) var tracks: [MeasuredTrack] = []
     private let storage: any MeasuredTrackStorageProtocol
     private var cancellables: Set<AnyCancellable> = []
@@ -49,6 +52,8 @@ final class MeasuredTrackListViewModel: MeasuredTrackListViewModelProtocol {
         }
     }
 
+    /// Deletes measured tracks at the specified offsets asynchronously.
+    /// - Parameter offsets: The index set of tracks to delete.
     func delete(at offsets: IndexSet) async {
         let items = offsets.map { self.tracks[$0] }
         for item in items {

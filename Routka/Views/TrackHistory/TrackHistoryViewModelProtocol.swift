@@ -8,10 +8,13 @@
 import SwiftUI
 import Combine
 
-/// Protocol for view models that provide track history data and date selection for the UI.
+/// A view model protocol that provides track history data and manages the selected date for filtering.
+/// 
+/// Conforming types supply an array of tracks filtered by the selected date and allow the date to be changed.
 protocol TrackHistoryViewModelProtocol: ObservableObject {
-    /// The list of tracks to display, typically filtered by the selected date.
+    /// The tracks to display, typically filtered by the selected date.
     var tracks: [Track] { get }
-    /// The date currently selected for viewing track history.
+    
+    /// The currently selected date for viewing track history.
     var selectedDate: Date { get set }
 }

@@ -14,23 +14,39 @@ enum TrackControlMode {
     case available
 }
 
+/// The main view model responsible for managing map-related features,
+/// including track recording, location updates handling, and track replay management.
 @Observable
 final class BaseMapViewModel: BaseMapViewModelProtocol {
     
     // MARK: - Outside parameters
+    
+    /// The current mode of the map view.
     let mapMode: MapViewMode = .trackUser
+    
+    /// The mode indicating the availability and visibility of the track control UI.
     var trackControlMode: TrackControlMode = .available
+    
+    /// The current speed of the user/device, if available.
     var currentSpeed: CLLocationSpeed? = 0
+    
+    /// The current authorization status for location access.
     var locationAccess: CLAuthorizationStatus = .notDetermined
+    
+    /// The service responsible for track recording functionality.
     let trackRecordingService: any TrackRecordingServiceProtocol
+    
     private(set) var replayValidator: TrackReplayValidator? = nil
     
     // MARK: - Outside methods
     
+    /// Clears the currently recorded track.
     func dismissRecordedTrack() {
         self.trackRecordingService.clearTrack()
     }
     
+    /// Checks whether a track recording session is currently active.
+    /// - Returns: `true` if recording is active, `false` otherwise.
     func isRecordingTrack() -> Bool {
         if self.trackRecordingService.isRecording {
             return true
@@ -39,19 +55,24 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         }
     }
     
-    /// Manual track start
+    /// Starts a new track recording session with the specified auto-stop policy.
+    /// - Parameter mode: The auto-stop policy to use when starting the track recording. Defaults to `.manual`.
     func startTrack(_ mode: RecordingAutoStopPolicy = .manual) {
         self.trackRecordingService.startTrack(mode)
     }
     
+    /// Stops the current track recording session and attempts to save the recorded track asynchronously.
+    /// - Throws: An error if stopping or saving the track fails.
     func stopTrack() async throws {
         try await stopAndSaveTrack()
     }
     
+    /// Deselects the currently selected replay track, if any.
     func deselectReplay() {
         self.receiveReplayTrackAction(.deselect)
     }
     
+    /// Requests location access permissions from the user.
     func requestLocation() {
         self.locationService.requestLocationAccess()
     }
@@ -99,6 +120,10 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         }
     }
     
+    /// Handles a new location update by processing the location data,
+    /// updating the current speed, appending the track position,
+    /// and checking replay checkpoints as needed.
+    /// - Parameter location: The updated location to process.
     func receivedLocationUpdate(_ location: CLLocation) async {
         let trackPoint: TrackPoint = .init(position: location.coordinate,
                                            speed: max(0,location.speed),
@@ -124,7 +149,9 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         
     }
     
-    /// Reacting if we are in stop or start checkpoints
+    /// Checks if the current location is within any replay checkpoints,
+    /// and updates recording state and control modes accordingly.
+    /// - Parameter location: The current location to evaluate.
     func checkIfInReplayCheckpoint(_ location: CLLocation) async {
         /*
          if check recordingService not recording
@@ -166,6 +193,9 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
         }
     }
     
+    /// Processes a replay track action such as selection or deselection,
+    /// updating the replay validator and track control mode accordingly.
+    /// - Parameter action: The replay track action to handle.
     func receiveReplayTrackAction(_ action: TrackReplayAction) {
         switch action {
         case .select(let track):

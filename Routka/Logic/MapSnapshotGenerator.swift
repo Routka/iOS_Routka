@@ -8,14 +8,35 @@
 
 import MapKit
 
+/**
+ A protocol defining an interface for generating map snapshot images from a given track.
+
+ Implementations of this protocol asynchronously generate a snapshot image of a map region containing the track,
+ including any relevant overlays or annotations.
+ */
 protocol MapSnapshotGeneratorProtocol {
+    /**
+     Asynchronously generates a snapshot image for the specified track and output size.
+
+     - Parameters:
+       - track: The Track object containing geographic points and related data to visualize on the snapshot.
+       - size: The desired size (in points) of the resulting snapshot image.
+
+     - Returns: A `UIImage` representing the snapshot of the map region with the track overlay, or `nil` if generation is cancelled or fails.
+     
+     - Throws: Propagates errors thrown during snapshot generation.
+     */
     func generateSnapshot(track: Track,
                           size: CGSize
     ) async throws -> UIImage? 
 }
 
-/// Generates a snapshot image for a given map‑rect and draws the supplied overlay
-/// using its renderer.
+/**
+ A concrete implementation of `MapSnapshotGeneratorProtocol` that generates map snapshots for a given track.
+
+ This class specializes in creating a snapshot image of a map region covering the track's points, drawing colored paths to represent speed segments,
+ and marking start, stop, and fastest points on the snapshot.
+ */
 final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
     init() {
     }
@@ -32,6 +53,11 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
         return MKMapRect(origin: MKMapPoint(x:min(a.x,b.x), y:min(a.y,b.y)), size: MKMapSize(width: abs(a.x-b.x), height: abs(a.y-b.y)))
     }
     
+    /**
+     Represents a normalized track point transformed into snapshot coordinate space.
+
+     Contains the CGPoint position within the snapshot image, speed at that point, and the timestamp of the record.
+     */
     struct NormalizedTrackPoint {
         /// The geographic coordinate for this track point.
         let position: CGPoint
@@ -47,11 +73,19 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
         }
     }
 
-    /// Creates a snapshot for `mapRect` and draws the overlay with its renderer.
-    /// - Parameters:
-    ///   * mapRect: The area to snapshot (in MKMapRect coordinates).
-    ///   * overlay: The overlay that will be rendered on the snapshot.
-    ///   * completion: Called with the resulting UIImage or an error.
+    /**
+     Generates a snapshot image for the given track and size, drawing the track path with speed-based colored segments.
+
+     Marks the start and stop points and visually highlights the fastest point with an emoji.
+
+     - Parameters:
+       - track: The track data containing geographic points to be rendered on the snapshot.
+       - size: The desired size of the output image.
+
+     - Returns: A `UIImage` snapshot with the track path and markers drawn, or `nil` if cancelled.
+     
+     - Throws: Errors encountered during snapshot generation.
+     */
     func generateSnapshot(track: Track,
                           size: CGSize
     ) async throws -> UIImage? {
@@ -96,11 +130,29 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
 
     // MARK: - Helpers
     
+    /**
+     Represents a single segment of a path with an associated color for rendering.
+
+     Used to draw segments of the track path with colors representing speed buckets.
+     */
     struct ColoredPathSegment {
         let path: UIBezierPath
         let color: UIColor
     }
     
+    /**
+     Draws multiple colored path segments and markers on top of a base image.
+
+     - Parameters:
+       - baseImage: The UIImage to draw upon.
+       - segments: An array of `ColoredPathSegment` representing the track segments to draw.
+       - lineWidth: The width of the path stroke.
+       - startPoint: Optional point to mark the start of the track.
+       - stopPoint: Optional point to mark the end of the track.
+       - fastestPoint: Optional point to mark the fastest location with an emoji.
+
+     - Returns: A new UIImage combining the base image and the drawn paths and markers.
+     */
     func drawColoredPaths(
         on baseImage: UIImage,
         segments: [ColoredPathSegment],
@@ -224,6 +276,15 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
     }
 
 
+    /**
+     Converts an array of normalized track points into an array of colored path segments.
+
+     Each segment represents a line between two consecutive points colored according to the speed bucket of the starting point.
+
+     - Parameter points: The array of normalized track points.
+
+     - Returns: An array of `ColoredPathSegment` ready for rendering.
+     */
     func makeColoredPaths(from points: [NormalizedTrackPoint]) -> [ColoredPathSegment] {
         guard points.count >= 2 else { return [] }
 
@@ -260,3 +321,4 @@ import SwiftUI
                    track: .filledTrack)
     .frame(height: 250)
 }
+

@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 //internal import MapKit
 
+/// The main app entry point for the Routka application.
 @main
 struct RoutkaApp: App {
     @State var tabRouter: any TabRouterProtocol
@@ -27,7 +28,7 @@ struct RoutkaApp: App {
         self.measurementsViewModel = MeasuredTrackListViewModel(dependencies: dependencies)
     }
     
-    
+    /// The main scene of the application providing the app's user interface structure.
     var body: some Scene {
         WindowGroup {
             TabView(selection: $tabRouter.selectedTab) {

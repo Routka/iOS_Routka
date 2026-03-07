@@ -6,12 +6,13 @@
 //
 import Foundation
 
+/// Enum representing different track logic types, distinguishing how time and speed are recorded and handled in a track.
 enum TrackType: String, Codable {
-    /// Classical Track, time recording starts with driver being stationary at the start and both time and driver start moving at the same time
+    /// Classical track: time recording starts with the driver stationary at the start; both time and driver start moving simultaneously.
     case classical
-    /// Speeedtrap track, which is a track started already at some speed and used to measure how fast some distance a driver can pass
+    /// Speedtrap track: started already at some speed, used to measure how fast a driver can pass a certain distance.
     case speedtrap
     
-    /// Track is a replay of another track
+    /// Replay track: a replay of another track.
     case replay
 }
