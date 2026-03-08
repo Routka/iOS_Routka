@@ -72,6 +72,17 @@ struct ImportedTracksListView: View {
         .contentMargins(.horizontal, 10, for: .scrollContent)
         .frame(maxWidth: .infinity)
         .animation(.default, value: vm.screenState)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) { // Specify placement
+                Button {
+                    Task {
+                        dependencies.trackFileService.showImporter()
+                    }
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+            }
+        }
         .navigationTitle("Imported Tracks")
         .overlay {
             if case .list(let array) = vm.screenState,

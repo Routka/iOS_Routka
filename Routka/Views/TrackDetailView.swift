@@ -168,11 +168,6 @@ struct TrackDetailView: View {
             Section (header: Text("Track Details")){
                 baseTrackInfo
             }
-            Button("EXPORT") {
-                Task {
-                    dependencies.trackFileService.exportTrack(vm.track)
-                }
-            }
             if vm.track.parentID == nil {
                 Button {
                     Task {
@@ -194,8 +189,19 @@ struct TrackDetailView: View {
                     .frame(height: 200)
                 topSpeed
             }
-            editSection
-            
+            if vm.track.trackType != .import {
+                editSection
+            }
+            if vm.children.isEmpty {
+                Button(role: .destructive) {
+                    Task {
+                        await dependencies.storageService.deleteTrack(vm.track)
+                    }
+                } label: {
+                    Label("Delete track", systemImage: "trash")
+                        .foregroundStyle(.red)
+                }
+            }
             
             
             if !vm.children.isEmpty  {
@@ -217,6 +223,20 @@ struct TrackDetailView: View {
         })
         .navigationTitle("\(vm.track.startDate.toString(style: .medium)) Track")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            if vm.track.trackType != .import,
+               vm.track.replayMode != .replay {
+                ToolbarItem(placement: .navigationBarTrailing) { // Specify placement
+                    Button {
+                        Task {
+                            dependencies.trackFileService.exportTrack(vm.track)
+                        }
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
+        }
     }
     
     private var editSection: some View {
@@ -248,16 +268,6 @@ struct TrackDetailView: View {
                                          dependencies: dependencies))
                 } label: {
                     Label("Edit track", systemImage: "timeline.selection")
-                }
-            }
-            if vm.children.isEmpty {
-                Button(role: .destructive) {
-                    Task {
-                        await dependencies.storageService.deleteTrack(vm.track)
-                    }
-                } label: {
-                    Label("Delete track", systemImage: "trash")
-                        .foregroundStyle(.red)
                 }
             }
         }
