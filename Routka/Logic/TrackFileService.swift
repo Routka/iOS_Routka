@@ -8,11 +8,15 @@
 import Foundation
 import SwiftUI
 
+enum TrackFileServiceError: Error {
+    case invalidFile
+}
+
 protocol TrackFileServiceProtocol: Observable {
     var isImporterPresented: Bool { get set }
     var isExporterPresented: Bool { get set }
     var fileToExport: URL? { get set }
-    func importFromFile(url: URL) async
+    func importFromFile(url: URL) async throws -> Track
     func exportTrack(_ track: Track)
     func showImporter()
 }
@@ -34,16 +38,17 @@ final class TrackFileService: TrackFileServiceProtocol {
         self.isImporterPresented = true
     }
     
-    func importFromFile(url: URL) async {
-        guard url.pathExtension.lowercased() == "routka" else { return }
+    func importFromFile(url: URL) async throws -> Track {
+        guard url.pathExtension.lowercased() == "routka" else { throw TrackFileServiceError.invalidFile}
         do {
             let data = try Data(contentsOf: url)
             var track = try JSONDecoder().decode(Track.self, from: data)
             track.trackType = .import // override so it is always considered an import
             try await trackStorage?.addTrack(track)
+            return track
         } catch {
-            
             print("Failed to import .routka file: \(error)")
+            throw error
         }
     }
     

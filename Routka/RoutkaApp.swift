@@ -53,7 +53,7 @@ struct RoutkaApp: App {
 //                .tag("Settings")
             }
             .disclaimerOnce()
-            .fileManager(managedBy: dependencies.trackFileService)
+            .fileManager(managedBy: dependencies)
         }
     }
 }

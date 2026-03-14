@@ -38,10 +38,12 @@ extension DependencyManager {
 // MARK: - Mock default implementations
 extension DependencyManager {
     final class MockTrackFileService: TrackFileServiceProtocol {
+        func exportTrack(_ track: Track) {
+        }
         func showImporter() {
         }
-        
-        func exportTrack(_ track: Track) {
+        func importFromFile(url: URL) async throws -> Track {
+            return .filledTrack
         }
         
         var isExporterPresented: Bool = false

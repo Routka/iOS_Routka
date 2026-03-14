@@ -50,9 +50,14 @@ struct TracksTabView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack {
                     ForEach(vm.importedTracks) { track in
-                        TrackHistoryCellView(track: track,
-                                             unit: UnitSpeed.byName(speedUnit),
-                                             dependencies: dependencies)
+                        Button {
+                            dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
+                                .trackDetail(track: track, dependencies: dependencies))
+                        } label: {
+                            TrackHistoryCellView(track: track,
+                                                 unit: UnitSpeed.byName(speedUnit),
+                                                 dependencies: dependencies)
+                        }
                         .frame(height: 300)
                         .containerRelativeFrame(.horizontal)
                         
@@ -107,9 +112,14 @@ struct TracksTabView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack {
                     ForEach(vm.historyTracks) { track in
-                        TrackHistoryCellView(track: track,
-                                             unit: UnitSpeed.byName(speedUnit),
-                                             dependencies: dependencies)
+                        Button {
+                            dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
+                                .trackDetail(track: track, dependencies: dependencies))
+                        } label: {
+                            TrackHistoryCellView(track: track,
+                                                 unit: UnitSpeed.byName(speedUnit),
+                                                 dependencies: dependencies)
+                        }
                         .frame(height: 300)
                         .containerRelativeFrame(.horizontal)
                         
@@ -154,10 +164,15 @@ struct TracksTabView: View {
                     ForEach(batches, id: \.hashValue) { batch in
                         VStack {
                             ForEach(batch) { measure in
-                                MeasuredTrackCellView(measured: measure)
-                                    .padding(6)
-                                    .background(Material.thin)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                                Button {
+                                    dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
+                                        .measuredTrackDetail(track: measure, dependencies: dependencies))
+                                } label: {
+                                    MeasuredTrackCellView(measured: measure)
+                                        .padding(6)
+                                        .background(Material.thin)
+                                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                                }
                             }
                         }
                         .scrollTargetLayout()

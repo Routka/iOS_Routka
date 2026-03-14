@@ -11,8 +11,8 @@ import UniformTypeIdentifiers
 
 extension View {
     
-    func fileManager(managedBy fileManager: any TrackFileServiceProtocol) -> some View {
-        self.modifier(FileServiceViewWrapper(service: fileManager))
+    func fileManager(managedBy dependencies: DependencyManager) -> some View {
+        self.modifier(FileServiceViewWrapper(dependencies: dependencies))
            
     }
 }
@@ -20,13 +20,29 @@ extension View {
 
 private struct FileServiceViewWrapper: ViewModifier {
     @State var service: any TrackFileServiceProtocol
+    let dependencies: DependencyManager
+    init(dependencies: DependencyManager) {
+        self._service = .init(wrappedValue: dependencies.trackFileService)
+        self.dependencies = dependencies
+    }
     
-    init(service: any TrackFileServiceProtocol) {
-        self._service = .init(wrappedValue: service)
+    func importFromURL(url: URL) {
+        
     }
     
     func body(content: Content) -> some View {
         content
+            .onOpenURL { url in
+                guard url.isFileURL, url.pathExtension.lowercased() == "routka" else {
+                    return
+                }
+                Task { @MainActor in
+                    guard let track = try? await service.importFromFile(url: url) else { return }
+                    dependencies.tabRouter.selectedTab = "Tracks"
+                    dependencies.routers[dependencies.tabRouter.selectedTab]?.popToRoot()
+                    dependencies.routers[dependencies.tabRouter.selectedTab]?.push(.trackDetail(track: track, dependencies: dependencies))
+                }
+            }
             .fileImporter(
                 isPresented: $service.isImporterPresented,
                 allowedContentTypes: [UTType(filenameExtension: "routka")!],
@@ -36,7 +52,7 @@ private struct FileServiceViewWrapper: ViewModifier {
                 case .success(let urls):
                     guard let url = urls.first else { return }
                     Task {
-                        await service.importFromFile(url: url)
+                        _ = try? await service.importFromFile(url: url)
                     }
                 case .failure(let error):
 //                    importError = error
@@ -60,22 +76,6 @@ private struct FileServiceViewWrapper: ViewModifier {
 //                    AlertController.showAlert("generic_error".localized())
                 }
             }
-//            .fileExporter(isPresented: $service.isExporterPresented,
-//                          document: [.], contentType: .plainText) { result in
-//                switch result {
-//                case .success(let url):
-//                    print("Saved to \(url)")
-//                case .failure(let error):
-//                    print(error.localizedDescription)
-//                }
-//            }
-//            .alert("Import Error", isPresented: Binding<Bool>(
-//                get: { importError != nil },
-//                set: { if !$0 { importError = nil } }
-//            ), actions: {
-//                Button("OK", role: .cancel) { }
-//            }, message: {
-//                Text(importError?.localizedDescription ?? "Unknown error")
-//            })
+                       
     }
 }
