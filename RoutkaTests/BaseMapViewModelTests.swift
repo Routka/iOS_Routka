@@ -262,7 +262,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .classical)
-        #expect(track.type == .classical)
+        #expect(track.replayMode == .classical)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -287,7 +287,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .classical)
-        #expect(track.type == .classical)
+        #expect(track.replayMode == .classical)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -318,7 +318,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .classical)
-        #expect(track.type == .classical)
+        #expect(track.replayMode == .classical)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -359,7 +359,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .speedtrap)
-        #expect(track.type == .speedtrap)
+        #expect(track.replayMode == .speedtrap)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -395,7 +395,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .speedtrap)
-        #expect(track.type == .speedtrap)
+        #expect(track.replayMode == .speedtrap)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -432,7 +432,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .speedtrap)
-        #expect(track.type == .speedtrap)
+        #expect(track.replayMode == .speedtrap)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -476,7 +476,7 @@ struct BaseMapViewModelTests {
         
         var track = await Track.filledTrack
         await track.changeType(to: .speedtrap)
-        #expect(track.type == .speedtrap)
+        #expect(track.replayMode == .speedtrap)
         
         await vm.receiveReplayTrackAction(TrackReplayAction.select(track))
         guard let replayValidator = await vm.replayValidator else {
@@ -518,7 +518,7 @@ struct BaseMapViewModelTests {
         // configuring track which we are going to replay
         var trackWhichReplaying = await Track.filledTrack
         await trackWhichReplaying.changeType(to: .speedtrap)
-        #expect(trackWhichReplaying.type == .speedtrap)
+        #expect(trackWhichReplaying.replayMode == .speedtrap)
         
         // Sending track
         await vm.receiveReplayTrackAction(TrackReplayAction.select(trackWhichReplaying))
