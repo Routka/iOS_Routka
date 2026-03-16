@@ -16,7 +16,7 @@ import MapKit
 */
 
 
-enum SpeedBucket {
+enum SpeedBucket: Equatable {
     case slow, regular, speedy, dangerous, extreme
     init(for speed: CLLocationSpeed) {
         switch speed {

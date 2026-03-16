@@ -12,14 +12,66 @@ import MapKit
 extension Route where Self == TrackTrimView.RouteBuilder {
     /// View of trimming the track
     static func trackTrim(track: Track,
-                            first: TrackPoint,
-                            last: TrackPoint,
                             dependencies: DependencyManager) -> TrackTrimView.RouteBuilder {
         TrackTrimView.RouteBuilder(track: track,
-                                     first: first,
-                                     last: last,
                                      dependencies: dependencies)
     }
+}
+
+import Combine
+@Observable
+final class TrackTrimViewModel {
+    let track: Track
+    var trimmedTrack: Track
+    var startIndex: Int {
+        didSet {
+            self.trimTrack(startPoint: startIndex,
+                           stopPoint: self.stopIndex)
+//            startIndexPub.send(startIndex)
+        }
+    }
+    var stopIndex: Int {
+        didSet {
+            self.trimTrack(startPoint: startIndex,
+                           stopPoint: self.stopIndex)
+//            startIndexPub.send(startIndex)
+        }
+    }
+    let maxCount: Int
+    
+    private let startIndexPub = PassthroughSubject<Int, Never>()
+    private let stopIndexPub = PassthroughSubject<Int, Never>()
+    
+    private var cancellables: Set<AnyCancellable> = []
+    
+    init(track: Track) {
+        self.track = track
+        self.trimmedTrack = track
+        self.startIndex = 0
+        self.stopIndex = track.points.count - 1
+        self.maxCount = track.points.count - 1
+        
+//        startIndexPub
+//            .debounce(for: .seconds(0.1), scheduler: RunLoop.main)
+//            .sink { newStartIndex in
+//                self.trimTrack(startPoint: newStartIndex,
+//                               stopPoint: self.stopIndex)
+//            }
+//            .store(in: &cancellables)
+//        stopIndexPub
+//            .debounce(for: .seconds(0.1), scheduler: RunLoop.main)
+//            .sink { newStopIndex in
+//                self.trimTrack(startPoint: self.startIndex,
+//                          stopPoint: newStopIndex)
+//            }
+//            .store(in: &cancellables)
+    }
+    
+    private func trimTrack(startPoint: Int, stopPoint: Int) {
+        let cut = track.points[startPoint...stopPoint]
+        trimmedTrack.points = Array(cut)
+    }
+    
 }
 
 struct TrackTrimView: View {
@@ -33,117 +85,101 @@ struct TrackTrimView: View {
         }
         
          let track: Track
-         let first: TrackPoint
-         let last: TrackPoint
          let dependencies: DependencyManager
 
         func build() -> AnyView {
             AnyView(TrackTrimView(track: track,
-                                  first: first,
-                                  last: last,
                                   dependencies: dependencies))
         }
     }
     
-    @State private var start: TrackPoint
-    @State private var stop: TrackPoint
-    let track: Track
-    
-    func trimmedTrack(_ track: [TrackPoint], start: TrackPoint, stop: TrackPoint) -> [TrackPoint] {
-        guard let startIndex = track.firstIndex(where: { $0 == start }),
-              let stopIndex = track.lastIndex(where: { $0 == stop }),
-              startIndex <= stopIndex else {
-            return []
-        }
-        return Array(track[startIndex...stopIndex])
-    }
     private let dependencies: DependencyManager
+    @State private var vm: TrackTrimViewModel
     
     init(track: Track,
-         first: TrackPoint,
-         last: TrackPoint,
          dependencies: DependencyManager) {
-        self.track = track
-        self.start = first
-        self.stop = last
+        self._vm = .init(initialValue: .init(track: track))
         self.dependencies = dependencies
     }
     
     var body: some View {
-        let trimmedTrack = trimmedTrack(track.points,
-                                       start: start,
-                                       stop: stop)
-        MapView(mode: .free(track), dependencies: dependencies) {
-            MapContents.fantomTrack(track)
-            MapContents.speedTrack(trimmedTrack)
+        MapView(mode: .free(vm.track), dependencies: dependencies) {
+            MapContents.fantomTrack(vm.track)
+            MapContents.speedTrack(vm.trimmedTrack)
         }
             .overlay(alignment: .bottom) {
                 VStack {
-                    if track.points.count !=
-                        trimmedTrack.count {
-                        HStack {
-                            Button {
-                                Task {
-                                    var track = self.track
-                                    track.points = trimmedTrack
-                                    do {
-                                        try await dependencies.storageService.updateTrack(track)
-                                        dependencies.routers[dependencies.tabRouter.selectedTab]?
-                                            .pop()
-                                        await dependencies.mapSnippetCache.invalidateCache(for: track.id)
-                                    } catch {
-                                        print("Failed saving track", error)
-                                    }
-                                }
-                            } label: {
-                                Text("Save")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundStyle(Color.primary)
-                                    .padding(8)
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
-                            .transition(.opacity)
-                            Button {
-                                Task {
-                                    let NewTrack = Track(id: UUID().uuidString,
-                                                      points: trimmedTrack,
-                                                      parentID: nil)
-                                    do {
-                                        try await dependencies.storageService.addTrack(NewTrack)
-                                        let router = dependencies.routers[dependencies.tabRouter.selectedTab]
-                                        router?.popToRoot()
-                                        try? await Task.sleep(for: .seconds(0.5))
-                                        router?.push(.trackDetail(track: NewTrack, dependencies: dependencies))
-                                    } catch {
-                                        print("Failed saving track", error)
-                                    }
-                                }
-                            } label: {
-                                Text("Save As New")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundStyle(Color.primary)
-                                    .padding(8)
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
-                            .transition(.opacity)
-                        }
+                    if vm.track.points.first != vm.trimmedTrack.points.first ||
+                        vm.track.points.last != vm.trimmedTrack.points.last {
+                        controls
                     }
-                    TrackTrimSlider(points: track.points, start: $start, stop: $stop)
+                    
+                    StartStopSliderView(startIndex: $vm.startIndex,
+                                        stopIndex: $vm.stopIndex,
+                                        maxIndex: vm.maxCount)
                         .padding()
-                        .glassEffect()
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 40))
+                        .padding(.bottom, 25) // apple maps legal padding
                 }
-                .animation(.bouncy, value: trimmedTrack.count)
+                .padding(.horizontal)
             }
+    }
+    
+    @ViewBuilder
+    private var controls: some View {
+        HStack {
+            Button {
+                Task {
+                    let track = self.vm.trimmedTrack
+                    do {
+                        try await dependencies.storageService.updateTrack(track)
+                        dependencies.routers[dependencies.tabRouter.selectedTab]?
+                            .pop()
+                        await dependencies.mapSnippetCache.invalidateCache(for: track.id)
+                    } catch {
+                        print("Failed saving track", error)
+                    }
+                }
+            } label: {
+                Text("Save")
+                    .font(.headline)
+                    .bold()
+                    .foregroundStyle(Color.primary)
+                    .padding(8)
+                    .frame(maxWidth: .infinity)
+            }
+            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
+            .transition(.opacity)
+            Button {
+                Task {
+                    let NewTrack = Track(id: UUID().uuidString,
+                                         points: vm.trimmedTrack.points,
+                                      parentID: nil)
+                    do {
+                        try await dependencies.storageService.addTrack(NewTrack)
+                        let router = dependencies.routers[dependencies.tabRouter.selectedTab]
+                        router?.popToRoot()
+                        try? await Task.sleep(for: .seconds(0.5))
+                        router?.push(.trackDetail(track: NewTrack, dependencies: dependencies))
+                    } catch {
+                        print("Failed saving track", error)
+                    }
+                }
+            } label: {
+                Text("Save As New")
+                    .font(.headline)
+                    .bold()
+                    .foregroundStyle(Color.primary)
+                    .padding(8)
+                    .frame(maxWidth: .infinity)
+            }
+            .glassEffect(.regular.tint(.green.opacity(0.5)).interactive(), in: Capsule())
+            .transition(.opacity)
+        }
     }
 }
 
 #Preview {
     TrackTrimView(track: .filledTrack,
-                  first: Track.filledTrack.points.first!,
-                  last: Track.filledTrack.points.last!,
                   dependencies: .mock())
 }

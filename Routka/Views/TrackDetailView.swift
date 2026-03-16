@@ -257,14 +257,10 @@ struct TrackDetailView: View {
             }
             
             if vm.track.parentID == nil,
-               vm.children.isEmpty,
-               let start = vm.track.points.first,
-               let stop = vm.track.points.last {
+               vm.children.isEmpty {
                 Button {
                     dependencies.routers[dependencies.tabRouter.selectedTab]?
                         .push(.trackTrim(track: vm.track,
-                                         first: start,
-                                         last: stop,
                                          dependencies: dependencies))
                 } label: {
                     Label("Edit track", systemImage: "timeline.selection")
