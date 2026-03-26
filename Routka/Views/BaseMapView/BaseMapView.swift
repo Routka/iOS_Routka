@@ -62,9 +62,11 @@ struct BaseMapView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            controls
+            bottomBar
+                .padding(.horizontal, 10)
             // Moving control out of the way of Apple Maps legal label
-            .padding(.bottom, 25)
+                .padding(.bottom, 25)
+                .animation(.default, value: vm.locationAccess.isAuthorized())
         }
         .overlay(alignment: .topLeading) {
             replayDeselect
@@ -73,7 +75,6 @@ struct BaseMapView: View {
         .animation(.bouncy, value: vm.currentSpeed != nil)
         .animation(.bouncy, value: vm.trackRecordingService.currentTrack != nil)
         .animation(.default, value: vm.replayValidator?.track != nil)
-        .animation(.default, value: vm.locationAccess.isAuthorized())
         .sheet(isPresented: $showMeasuredTracksSelector) {
             TrackPresetsView(vm: TrackPresetsViewModel(baseMapVM: vm,
                                                        dependencies: dependencies))
@@ -90,9 +91,9 @@ struct BaseMapView: View {
                     Image(systemName: "xmark")
                     Text("Stop Replay")
                 }
-                    .bold()
-                    .foregroundStyle(Color.white)
-                    .padding(8)
+                .bold()
+                .foregroundStyle(Color.white)
+                .padding(8)
             }
             .glassEffect(.clear.tint(.red.opacity(0.8)).interactive(), in: Capsule())
             .transition(.opacity)
@@ -115,148 +116,106 @@ struct BaseMapView: View {
         }
         .animation(.bouncy, value: progress)
     }
-
+    
+    @ViewBuilder
+    private var bottomBar: some View {
+        if vm.locationAccess.isAuthorized() {
+            controls
+        } else {
+            LocationAccessControlView(vm: vm)
+        }
+    }
+    
     private var controls: some View {
         VStack {
-            if vm.locationAccess.isAuthorized() {
+            HStack {
+                if vm.showMeasuringProgress {
+                    measuringProgress
+                }
+                if vm.showDismissRecordedTrackButton {
+                    dismissRecordedTrackButton
+                }
+            }
+            .animation(.bouncy, value: vm.showMeasuringProgress)
+            .animation(.bouncy, value: vm.showDismissRecordedTrackButton)
+            if let track = vm.trackRecordingService.currentTrack {
+                let unitSpeed = UnitSpeed.byName(speedUnit)
+                TrackLiveInfoView(track: track, unit: unitSpeed)
+            }
+            if vm.showControls {
                 HStack {
-                    
-                    if vm.showMeasuringProgress {
-                        let measurement = vm.trackRecordingService.stopPolicy
-                        let view = measureInfoTag(measurement)
-                        // extremely stupid workaround because glass makes colors in CircularProgressView semi transparent
-                        view
-                            .opacity(.ulpOfOne)
-                        .padding(10)
-//                        .padding(.horizontal, 10)
-                        .glassEffect(in: Capsule())
-                        .overlay {
-                            view
-                        }
+                    if vm.showMeasureTrackSelectorButton {
+                        measuredTracksSelector
                     }
-                    if vm.showDismissRecordedTrackButton {
-                        // Dismiss stats
-                        Button {
-                            vm.dismissRecordedTrack()
-                        } label: {
-                            Text("Dismiss track statistics")
-                                .lineLimit(1)
-                                .font(.headline)
-                                .padding(10)
-                                .padding(.horizontal)
-                                
-                        }
-                        .glassEffect(.regular
-                            .interactive(),
-                                     in: Capsule())
-                    }
+                    startStopButton
                 }
-                .animation(.bouncy, value: vm.trackRecordingService.isRecording)
-                if let track = vm.trackRecordingService.currentTrack {
-                    let unitSpeed = UnitSpeed.byName(speedUnit)
-                    TrackLiveInfoView(track: track, unit: unitSpeed)
-                }
-                if vm.showControls {
-                    HStack {
-                        if vm.showMeasureTrackSelectorButton {
-                            Button {
-                                self.showMeasuredTracksSelector.toggle()
-                            } label: {
-                                Image(systemName: "gauge.with.dots.needle.bottom.50percent.badge.plus")
-                                    .font(.title)
-                                    .bold()
-                                    .shadow(radius: 5)
-                                    .foregroundStyle(Color.primary)
-                                    .padding(8)
-                            }
-                            .glassEffect(.clear
-                                .interactive(), in: Circle())
-                        }
-                        TrackControlButton(vm: vm)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .disabled(vm.trackControlMode == .unavailable)
-                            .opacity(vm.trackControlMode == .available ? 1 : 0.6)
-                    }
-                }
-                    
-            } else {
-                LocationAccessControlView(vm: vm)
             }
         }
         .padding(.horizontal, 10)
     }
-}
-
-import Combine
-
-@Observable
-private final class MockTrackRecorder: TrackRecordingServiceProtocol {
-    var stopPolicyProgress: Double = 1
     
-    var isRecording: Bool = false
-    
-    var currentTrack: Track? = .filledTrack
-    
-    var stopPolicy: RecordingAutoStopPolicy = .reachingDistance(30, name: "30-100mkh")
-    
-    func clearTrack() {
+    private var measuringProgress: some View {
+        let measurement = vm.trackRecordingService.stopPolicy
+        let view = measureInfoTag(measurement)
+        return view
+            .opacity(.ulpOfOne)
+            .padding(10)
+            .glassEffect(in: Capsule())
+            .overlay {
+                // extremely stupid workaround because glass makes colors in CircularProgressView semi transparent
+                view
+            }
+            .transition(.move(edge: .leading)
+                .combined(with: .opacity))
     }
     
-    func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction {
-        return .allow
+    private var dismissRecordedTrackButton: some View {
+        Button {
+            vm.dismissRecordedTrack()
+        } label: {
+            Text("Dismiss track statistics")
+                .lineLimit(1)
+                .font(.headline)
+                .padding(10)
+                .padding(.horizontal)
+            
+        }
+        .glassEffect(.regular
+            .interactive(),
+                     in: Capsule())
+        .transition(.move(edge: .trailing)
+            .combined(with: .opacity))
     }
     
-    func startTrack(_ stopPolicy: RecordingAutoStopPolicy) {
+    private var measuredTracksSelector: some View {
+        Button {
+            self.showMeasuredTracksSelector.toggle()
+        } label: {
+            Image(systemName: "gauge.with.dots.needle.bottom.50percent.badge.plus")
+                .font(.title)
+                .bold()
+                .shadow(radius: 5)
+                .foregroundStyle(Color.primary)
+                .padding(8)
+        }
+        .glassEffect(.clear
+            .interactive(), in: Circle())
+        .transition(.move(edge: .leading))
     }
     
-    func stopTrack() throws(TrackServiceError) -> Track {
-        return .filledTrack
+    private var startStopButton: some View {
+        TrackControlButton(buttonType: vm.recordingButtonIsRecording ?
+            .stop : .start) {
+                Task {
+                    if vm.recordingButtonIsRecording {
+                        try? await vm.stopTrack()
+                    } else {
+                        vm.startTrack(.manual)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .disabled(vm.trackControlMode == .unavailable)
+            .opacity(vm.trackControlMode == .available ? 1 : 0.6)
     }
-    
-    
-}
-
-@Observable
-private final class PreviewModel: BaseMapViewModelProtocol {
-    var showStartPoint: Bool = true
-    var showDeselectReplayButton: Bool = true
-    var showMeasuringProgress: Bool = true
-    var showDismissRecordedTrackButton: Bool = true
-    var showControls: Bool = true
-    var showMeasureTrackSelectorButton: Bool = true
-    
-    func dismissRecordedTrack() {
-    }
-    
-    func isRecordingTrack() -> Bool {
-        return true
-    }
-    
-    var mapMode: MapViewMode = .free(.filledTrack)
-    
-    var trackControlMode: TrackControlMode = .available
-    
-    var currentSpeed: CLLocationSpeed? = 0
-    
-    var locationAccess: CLAuthorizationStatus = .authorizedWhenInUse
-    
-    var trackRecordingService: any TrackRecordingServiceProtocol = MockTrackRecorder()
-    
-    var replayValidator: TrackReplayValidator? = .init(replayingTrack: .filledTrack, checkPointInterval: 20)
-    
-    func startTrack(_ mode: RecordingAutoStopPolicy) {
-    }
-    
-    func stopTrack() async throws {
-    }
-    
-    func deselectReplay() {
-    }
-    
-    func requestLocation() {
-    }
-}
-
-#Preview {
-    BaseMapView(vm: PreviewModel(), dependencies: .mock())
 }

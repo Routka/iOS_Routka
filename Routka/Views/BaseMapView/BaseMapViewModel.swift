@@ -41,7 +41,11 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
     }
     
     var showMeasureTrackSelectorButton: Bool {
-        isRecordingTrack() == false
+        self.trackRecordingService.isRecording == false
+    }
+    
+    var recordingButtonIsRecording: Bool {
+        self.trackRecordingService.isRecording
     }
     
     
@@ -69,16 +73,6 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
     /// Clears the currently recorded track.
     func dismissRecordedTrack() {
         self.trackRecordingService.clearTrack()
-    }
-    
-    /// Checks whether a track recording session is currently active.
-    /// - Returns: `true` if recording is active, `false` otherwise.
-    func isRecordingTrack() -> Bool {
-        if self.trackRecordingService.isRecording {
-            return true
-        } else {
-            return false
-        }
     }
     
     /// Starts a new track recording session with the specified auto-stop policy.

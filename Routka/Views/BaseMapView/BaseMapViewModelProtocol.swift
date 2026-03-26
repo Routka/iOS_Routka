@@ -10,13 +10,14 @@ import MapKit
 
 /// Protocol defining the required interface for map-based track recording view models.
 /// Provides access to current track, position, speed, and track control actions.
-protocol BaseMapViewModelProtocol: Observable, TrackControllerProtocol, LocationAccessViewModelProtocol {
+protocol BaseMapViewModelProtocol: Observable, LocationAccessViewModelProtocol {
     var showStartPoint: Bool { get } //trackRecordingService.isRecording != true
     var showDeselectReplayButton: Bool { get } //replayValidator?.track != nil
     var showMeasuringProgress: Bool { get } //trackRecordingService.stopPolicy != .manual
     var showDismissRecordedTrackButton: Bool { get } //trackRecordingService.currentTrack != nil && trackRecordingService.isRecording == false
     var showControls: Bool { get } // trackControlMode != .hidden
     var showMeasureTrackSelectorButton: Bool { get } //isRecordingTrack() == false
+    var recordingButtonIsRecording: Bool { get }
     
     var mapMode: MapViewMode { get }
     var trackControlMode: TrackControlMode { get }
