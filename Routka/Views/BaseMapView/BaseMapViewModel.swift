@@ -79,6 +79,12 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
     /// - Parameter mode: The auto-stop policy to use when starting the track recording. Defaults to `.manual`.
     func startTrack(_ mode: RecordingAutoStopPolicy = .manual) {
         self.trackRecordingService.startTrack(mode)
+        if let currentLocation = self.locationService.lastLocation {
+            Task {
+                await self.receivedLocationUpdate(currentLocation,
+                                                  overrideTimestamp: .now)
+            }
+        }
     }
     
     /// Stops the current track recording session and attempts to save the recorded track asynchronously.
@@ -110,13 +116,19 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
     private func stopAndSaveTrack() async throws {
         var track = try self.trackRecordingService.stopTrack()
         
+        // Ignore empty tracks which did not record anything
+        guard track.points.count > 1 else {
+            self.trackRecordingService.clearTrack()
+            //TODO: Show alert explaining that empty tracks are not welcome
+            return
+        }
+        
         if self.replayValidator?.stopReplayCheckpoint?.checkPointPassed == true,
            await (self.replayValidator?.trackCompletionByCheckpoints() ?? 0) >= SettingsService.shared.replayCompletionThreshold {
             track.parentID = self.replayValidator?.track.id
             track.replayMode = .replay
         }
         
-        guard track.points.isEmpty == false else { return }
         try await self.trackStorageService.addTrack(track)
     }
     
@@ -145,10 +157,11 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
     /// updating the current speed, appending the track position,
     /// and checking replay checkpoints as needed.
     /// - Parameter location: The updated location to process.
-    func receivedLocationUpdate(_ location: CLLocation) async {
+    func receivedLocationUpdate(_ location: CLLocation,
+                                overrideTimestamp: Date? = nil) async {
         let trackPoint: TrackPoint = .init(position: location.coordinate,
                                            speed: max(0,location.speed),
-                                           date: location.timestamp)
+                                           date: overrideTimestamp ?? location.timestamp)
         self.currentSpeed = max(0,location.speed)
         
         let suggestedAction = try? self.trackRecordingService.appendTrackPosition(trackPoint)

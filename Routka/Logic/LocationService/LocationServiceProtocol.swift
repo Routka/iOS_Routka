@@ -12,6 +12,8 @@ import CoreLocation
 /// Conforming types provide a way to observe location updates and authorization changes,
 /// and allow requesting location access from the user.
 protocol LocationServiceProtocol {
+    /// Last known location if any
+    var lastLocation: CLLocation? { get }
     /// A publisher that emits updated `CLLocation` objects as the device's location changes.
     var location: PassthroughSubject<CLLocation, Never> { get }
     

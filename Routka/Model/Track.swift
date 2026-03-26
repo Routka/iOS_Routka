@@ -28,9 +28,11 @@ struct Track: Codable, Hashable, Identifiable {
     
     /// The end date and time of the track, if stopped.
     var stopDate: Date? {
-        guard self.points.count > 1 else { return nil }
+        guard !_isStopped else { return nil }
         return self.points.last?.date
     }
+    
+    var _isStopped = false
     
     /// Identifier of a parent track, if any.
     var parentID: String?

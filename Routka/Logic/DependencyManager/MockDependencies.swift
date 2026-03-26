@@ -104,6 +104,8 @@ extension DependencyManager {
     }
     
     final class MockLocationService: LocationServiceProtocol {
+        var lastLocation: CLLocation? = nil
+        
         var authorizationStatus: CurrentValueSubject<CLAuthorizationStatus, Never> = .init(.notDetermined)
         
         func requestLocationAccess() {

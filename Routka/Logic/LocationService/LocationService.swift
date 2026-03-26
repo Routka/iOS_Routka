@@ -11,6 +11,9 @@ let locationServiceLogger = MainLogger("LocationService")
 
 final class LocationService: NSObject, CLLocationManagerDelegate, LocationServiceProtocol {
     public let location: PassthroughSubject<CLLocation, Never> = .init()
+    public var lastLocation: CLLocation? {
+        self.locationManager.location
+    }
     // Publisher for authorization status changes
     public let authorizationStatus: CurrentValueSubject<CLAuthorizationStatus, Never> = .init(.notDetermined)
     private let locationManager: CLLocationManager

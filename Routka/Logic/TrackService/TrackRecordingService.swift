@@ -100,7 +100,6 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
             throw .noCurrentTrack
         }
         self.isRecording = false
-        self.currentTrack = currentTrack
         return currentTrack
     }
     
