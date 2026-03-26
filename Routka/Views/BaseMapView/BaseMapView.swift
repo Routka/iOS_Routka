@@ -149,6 +149,7 @@ struct BaseMapView: View {
                     }
                     startStopButton
                 }
+                .animation(.bouncy, value: vm.showMeasureTrackSelectorButton)
             }
         }
         .padding(.horizontal, 10)
@@ -200,7 +201,8 @@ struct BaseMapView: View {
         }
         .glassEffect(.clear
             .interactive(), in: Circle())
-        .transition(.move(edge: .leading))
+        .transition(.move(edge: .leading)
+            .combined(with: .opacity))
     }
     
     private var startStopButton: some View {
