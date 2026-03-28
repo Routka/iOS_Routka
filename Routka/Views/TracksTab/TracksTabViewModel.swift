@@ -9,6 +9,8 @@ import Combine
 
 @Observable
 final class TracksTabViewModel: TracksTabViewModelProtocol {
+    let showLimit = 6
+    
     var historyTracks: [Track] = []
     var measuredTracks: [MeasuredTrack] = []
     var importedTracks: [Track] = []
@@ -21,14 +23,14 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
         
         Task {
             let historyTracks = await dependencies.storageService
-                .getAllTracks(ofType: .record, limit: 6)
+                .getAllTracks(ofType: .record, limit: showLimit)
             withAnimation {
                 self.historyTracks = historyTracks
             }
         }
         Task {
             let importedTracks = await dependencies.storageService
-                .getAllTracks(ofType: .import, limit: 6)
+                .getAllTracks(ofType: .import, limit: showLimit)
             withAnimation {
                 self.importedTracks = importedTracks
             }
@@ -36,7 +38,7 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
         
         Task {
             let measuredTracks = await dependencies.measuredTrackStorageService
-                .getMeasuredTracks(limit: 6)
+                .getMeasuredTracks(limit: showLimit)
             withAnimation {
                 self.measuredTracks = measuredTracks
             }
@@ -59,7 +61,7 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
     private func receiveAction(_ action: MeasuredTrackStorageAction) {
         switch action {
         case .created(let track):
-            guard measuredTracks.count < 6 else { return }
+            guard measuredTracks.count < showLimit else { return }
             // Insert track by descending startDate order
             if let index = measuredTracks.firstIndex(where: { $0.startDate > track.startDate }) {
                 measuredTracks.insert(track, at: index)
@@ -83,13 +85,13 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
                 case .record:
                     let index = self.historyTracks.firstIndex(where: { $0.startDate > track.startDate }) ?? 0
                     self.historyTracks.insert(track, at: index)
-                    if historyTracks.count > 6 {
+                    if historyTracks.count > showLimit {
                         self.historyTracks.removeLast(1)
                     }
                 case .import:
                     let index = self.importedTracks.firstIndex(where: { $0.startDate > track.startDate }) ?? 0
                     self.importedTracks.insert(track, at: index)
-                    if importedTracks.count > 6 {
+                    if importedTracks.count > showLimit {
                         self.importedTracks.removeLast(1)
                     }
                 case .measurement:

@@ -7,6 +7,7 @@
 import Foundation
 
 protocol TracksTabViewModelProtocol: Observable {
+    var showLimit: Int { get }
     var historyTracks: [Track] { get }
     var measuredTracks: [MeasuredTrack] { get }
     var importedTracks: [Track] { get }
