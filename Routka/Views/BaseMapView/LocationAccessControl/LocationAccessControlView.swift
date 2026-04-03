@@ -52,23 +52,22 @@ struct LocationAccessControlView: View {
             HStack {
                 Image(systemName: icon)
                     .font(.title2)
+                
                 Text(text)
                     .bold()
                     .underline()
                     .font(.title3)
             }
-                .foregroundStyle(Color.primary)
-                .padding(8)
-                .padding(.horizontal)
-                .glassEffect(.clear.interactive(),
-                             in: Capsule())
         }
+        .buttonStyle(.glassProminent)
     }
     
     private var restrictedAccess: some View {
         VStack(spacing: 8) {
             HStack {
                 Image(systemName: "location.slash")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.red, .tertiary)
                     .font(.title)
                 title("Location access was denied. To enable access, open Settings.")
             }
@@ -84,6 +83,8 @@ struct LocationAccessControlView: View {
         VStack {
             HStack {
                 Image(systemName: "location.viewfinder")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.secondary, .orange)
                     .font(.title)
                 title("We are not receiving your location right now")
                     .frame(maxWidth: .infinity, alignment: .leading)
