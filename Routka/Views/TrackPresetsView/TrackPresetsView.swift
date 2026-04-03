@@ -66,6 +66,12 @@ struct TrackPresetsView: View {
                     .multilineTextAlignment(.leading)
                     .bold()
                     .fixedSize(horizontal: false, vertical: true)
+                Text("measurements_presets_hint")
+                    .font(.caption)
+                    .multilineTextAlignment(.leading)
+                    .opacity(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 ForEach(vm.presets, id: \.preset.name) { preset in
                     button(preset) {
                         self.vm.startTrack(preset.preset)
@@ -77,7 +83,7 @@ struct TrackPresetsView: View {
             .padding()
         }
         .scrollBounceBehavior(.basedOnSize)
-        .presentationDetents([.fraction(0.7)])
+        .presentationDetents([.fraction(0.8)])
         .presentationDragIndicator(.visible)
     }
 }
