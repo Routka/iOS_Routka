@@ -205,6 +205,7 @@ struct BaseMapView: View {
                 .font(.title)
                 .bold()
                 .shadow(radius: 5)
+                .symbolRenderingMode(.multicolor)
                 .foregroundStyle(Color.primary)
                 .padding(7)
         }
