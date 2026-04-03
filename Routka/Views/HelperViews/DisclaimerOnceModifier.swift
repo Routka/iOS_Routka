@@ -48,6 +48,15 @@ struct DisclaimerOnceModifier: ViewModifier {
             }
         }
     }
+    
+    private var bottomMaskColors: [Color] {
+        Array(repeating: Color.black, count: 8) +
+        Array(repeating: Color.clear, count: 2)
+    }
+    private var topMaskColors: [Color] {
+        Array(repeating: Color.black, count: 15) +
+        Array(repeating: Color.clear, count: 1)
+    }
 
     /// Applies the disclaimer overlay logic to the modified content.
     func body(content: Content) -> some View {
@@ -66,46 +75,60 @@ struct DisclaimerOnceModifier: ViewModifier {
                     ZStack {
                         Color.black.opacity(0.4)
                             .ignoresSafeArea()
-                        VStack() {
-                            Text("Safety Warning")
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundStyle(Color.white)
-                                .shadow(radius: 5)
-                                .multilineTextAlignment(.center)
-//                                .opacity(0.8)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .glassEffect(.clear.tint(Color.black.opacity(0.4)),
-                                             in: RoundedRectangle(cornerRadius: 16))
+                        VStack {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .foregroundStyle(.orange)
+                                    .background(
+                                        Image(systemName: "exclamationmark.triangle")
+                                            .foregroundStyle(.white)
+                                    )
+                                Text("Safety Warning")
+                                    .foregroundStyle(Color.white)
+                                    .shadow(radius: 5)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .font(.title)
+                            .bold()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .glassEffect(.regular
+                                .tint(Color.black.opacity(0.8)),
+                                         in: RoundedRectangle(cornerRadius: 26))
                             VStack {
                                 ScrollView {
-                                    Text("""
-                                         By accessing or using this application, you represent, acknowledge, and agree that you are solely responsible for operating your vehicle safely and in full compliance with all applicable traffic laws and regulations.
-
-                                         Do not use your mobile device while the vehicle is in motion.
-                                         Always obey posted speed limits.
-                                         Avoid aggressive or reckless maneuvers.
-
-                                         Failure to comply with traffic laws may result in serious injury, death, or legal consequences.
-
-                                         If you wish to engage in high-speed or competitive driving, please do so only at authorized racing facilities.
-                                         """)
+                                    Text("disclaimer_body")
                                         .multilineTextAlignment(.center)
-                                        .font(.headline)
-                                        .padding(.horizontal)
+                                        .font(.subheadline)
                                         .foregroundStyle(Color.white)
                                 }
                                 .scrollIndicators(.hidden)
                                 .scrollBounceBehavior(.basedOnSize)
-                                understoodButton
+                                .contentMargins(.bottom, 100, for: .scrollContent)
+                                .contentMargins(.top, 25, for: .scrollContent)
+                                .mask(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: bottomMaskColors),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .mask(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: topMaskColors),
+                                        startPoint: .bottom,
+                                        endPoint: .top
+                                    )
+                                )
+                                .overlay(alignment: .bottom) {
+                                    understoodButton
+                                }
                             }
-                            .padding()
-                            .glassEffect(.clear
-                                .tint(Color.black.opacity(0.4)),
-                                         in: RoundedRectangle(cornerRadius: 16))
+                            .padding([.horizontal, .bottom])
+                            .glassEffect(.regular
+                                .tint(Color.black.opacity(0.8)),
+                                         in: RoundedRectangle(cornerRadius: 26))
                         }
-                        
                         
                         .padding()
                     }
