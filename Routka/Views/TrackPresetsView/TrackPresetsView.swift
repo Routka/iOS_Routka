@@ -26,7 +26,8 @@ struct TrackPresetsView: View {
                     Image(systemName: preset.preset.image)
                         .foregroundStyle(Color.accentColor)
                         .font(.title)
-                    Text(preset.preset.name)
+                    Text(LocalizedStringKey(preset.preset.name),
+                         tableName: "MeasurementPresets")
                         .foregroundStyle(Color.primary)
                         .font(.title2)
                     if let time = preset.time {
@@ -109,4 +110,5 @@ private final class PreviewModel: TrackPresetsViewModelProtocol {
         .sheet(isPresented: .constant(true)) {
             TrackPresetsView(vm: PreviewModel())
         }
+        .environment(\.locale, .init(identifier: "ru"))
 }

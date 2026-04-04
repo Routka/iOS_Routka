@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6112C2042F582CD800097AB3 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 6112C2032F582CD800097AB3 /* Localizable.xcstrings */; };
 		6122F42C2F431E3100E20474 /* Routka.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6122F42B2F431E3100E20474 /* Routka.icon */; };
 		61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 61BF8F1B2F51DD78000808F6 /* SimpleRouter */; };
 		61C220562F572409003846E3 /* FlowLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 61C220552F572409003846E3 /* FlowLayout */; };
@@ -32,7 +31,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6112C2032F582CD800097AB3 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		611CD5A32F423F4300979943 /* Routka.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Routka.xctestplan; sourceTree = "<group>"; };
 		6122F42B2F431E3100E20474 /* Routka.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Routka.icon; sourceTree = "<group>"; };
 		61399C622F41223F008A0F49 /* Routka.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Routka.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -69,6 +67,11 @@
 			path = RoutkaUITests;
 			sourceTree = "<group>";
 		};
+		61A23A412F808DFF00141E19 /* Locales */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Locales;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,7 +105,7 @@
 		61399C592F41223F008A0F49 = {
 			isa = PBXGroup;
 			children = (
-				6112C2032F582CD800097AB3 /* Localizable.xcstrings */,
+				61A23A412F808DFF00141E19 /* Locales */,
 				611CD5A32F423F4300979943 /* Routka.xctestplan */,
 				61399C642F41223F008A0F49 /* Routka */,
 				61399C742F412241008A0F49 /* RoutkaTests */,
@@ -139,6 +142,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				61399C642F41223F008A0F49 /* Routka */,
+				61A23A412F808DFF00141E19 /* Locales */,
 			);
 			name = Routka;
 			packageProductDependencies = (
@@ -252,7 +256,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6122F42C2F431E3100E20474 /* Routka.icon in Resources */,
-				6112C2042F582CD800097AB3 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,11 +445,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = Routka;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = DQBS9FK8M3;
+				DEVELOPMENT_TEAM = SZ24TTUHBL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Routka/Info.plist;
@@ -467,7 +469,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.vladukha.Routka;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Routka Distribution";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

@@ -1,0 +1,61 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "0-60 km/h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0-60 km/h"
+          }
+        }
+      }
+    },
+    "0-100 km/h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0-100 km/h"
+          }
+        }
+      }
+    },
+    "1/2 mile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1/2 мили"
+          }
+        }
+      }
+    },
+    "1/4 mile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1/4 мили"
+          }
+        }
+      }
+    },
+    "1/8 mile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1/8 мили"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}
