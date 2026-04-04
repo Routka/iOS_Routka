@@ -36,7 +36,7 @@ struct BaseMapView: View {
                 MapContents.replayTrack(replayTrack)
             }
             if let currentTrack = vm.trackRecordingService.currentTrack {
-                MapContents.speedTrack(currentTrack)
+                MapContents.liveTrack(currentTrack)
             }
             let checkPoints = vm.replayValidator?.checkpoints
                 .map({$0.value})

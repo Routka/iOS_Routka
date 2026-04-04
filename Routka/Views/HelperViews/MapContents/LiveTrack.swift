@@ -1,8 +1,8 @@
 //
-//  ReplayTrack.swift
+//  LiveTrack.swift
 //  Routka
 //
-//  Created by vladukha on 26.02.2026.
+//  Created by vladukha on 04.04.2026.
 //
 
 
@@ -10,12 +10,12 @@ import SwiftUI
 import MapKit
 
 extension MapContents {
-    /// Track polyline with cyan colored track
+    /// Track polyline with accent colored track
     @MapContentBuilder
-    static public func replayTrack(_ track: Track) -> some MapContent {
+    static public func liveTrack(_ track: Track) -> some MapContent {
         MapPolyline(coordinates: track.points.map({$0.position}),
                     contourStyle: .straight)
-        .stroke(.cyan.mix(with: .secondary, by: 0.5),
+        .stroke(Color.accentColor,
                 style: .init(lineWidth: 4,
                              lineCap: .round,
                              lineJoin: .round))
@@ -24,6 +24,6 @@ extension MapContents {
 
 #Preview {
     Map() {
-        MapContents.replayTrack(.filledTrack)
+        MapContents.liveTrack(.filledTrack)
     }
 }
