@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
+import vladukhaAlerts
 
 extension View {
     
@@ -52,28 +53,56 @@ private struct FileServiceViewWrapper: ViewModifier {
                 case .success(let urls):
                     guard let url = urls.first else { return }
                     Task {
-                        _ = try? await service.importFromFile(url: url)
+                        do {
+                            let importedTrack = try await service.importFromFile(url: url)
+                            dependencies.routers[dependencies.tabRouter.selectedTab]?
+                                .push(.trackDetail(track: importedTrack, dependencies: dependencies))
+                        } catch {
+                            await AlertController.shared.showAlert(String(localized: "importing track error alert",
+                                                                          table: "ExportImportAlerts"),
+                                                                   icon: .angryFail,
+                                                                   timeout: 5,
+                                                                   closable: true,
+                                                                   feedback: .error)
+                        }
                     }
                 case .failure(let error):
-//                    importError = error
+                    Task {
+                        await AlertController.shared.showAlert(String(localized: "importing track error alert",
+                                                                      table: "ExportImportAlerts"),
+                                                               icon: .angryFail,
+                                                               timeout: 5,
+                                                               closable: true,
+                                                               feedback: .error)
+                    }
+//                TODO: Record the error to metric
                     print(error)
-                    break
                 }
             }
             .fileMover(isPresented: $service.isExporterPresented,
                        file: service.fileToExport) { result in
                 switch result {
                 case .success(let newURL):
-                    print("SUCCESS MOVE")
-                    break
-//                    mainLogger.log("SUCCESS transfering video file to new URL", .info)
-//                    self.downloadManager.successfullTranfserURL = newURL
-//                    self.downloadManager.downloadFileDestination = nil
+                    print("Success moving file", newURL)
+                    Task {
+                        await AlertController.shared.showAlert(String(localized: "export track success",
+                                                                      table: "ExportImportAlerts"),
+                                                               icon: .done,
+                                                               timeout: 5,
+                                                               closable: true,
+                                                               feedback: .success)
+                    }
                 case .failure(let failure):
-                    print("FAILED MOVE")
-                    break
-//                    mainLogger.log("FAILURE transfering video file to new URL", message: failure.localizedDescription, .error)
-//                    AlertController.showAlert("generic_error".localized())
+                    print("Failure moving file", failure)
+//                TODO: Record error to metric
+                    Task {
+                        await AlertController.shared.showAlert(String(localized: "exporting track error alert",
+                                                                      table: "ExportImportAlerts"),
+                                                               icon: .angryFail,
+                                                               timeout: 5,
+                                                               closable: true,
+                                                               feedback: .error)
+                    }
                 }
             }
                        

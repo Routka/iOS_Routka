@@ -16,6 +16,7 @@ protocol TrackFileServiceProtocol: Observable {
     var isImporterPresented: Bool { get set }
     var isExporterPresented: Bool { get set }
     var fileToExport: URL? { get set }
+    @discardableResult
     func importFromFile(url: URL) async throws -> Track
     func exportTrack(_ track: Track)
     func showImporter()
@@ -38,6 +39,7 @@ final class TrackFileService: TrackFileServiceProtocol {
         self.isImporterPresented = true
     }
     
+    @discardableResult
     func importFromFile(url: URL) async throws -> Track {
         guard url.pathExtension.lowercased() == "routka" else { throw TrackFileServiceError.invalidFile}
         do {
@@ -48,6 +50,7 @@ final class TrackFileService: TrackFileServiceProtocol {
             return track
         } catch {
             print("Failed to import .routka file: \(error)")
+            // TODO: Record error to metric
             throw error
         }
     }
