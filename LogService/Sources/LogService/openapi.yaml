@@ -1,0 +1,391 @@
+openapi: 3.1.0
+info:
+  title: RoutkaBack Log API
+  version: 1.2.0
+  description: OpenAPI specification for ingesting and querying iOS application logs.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Logs
+  - name: Devices
+  - name: Sessions
+
+paths:
+  /api/logs:
+    post:
+      operationId: createLogs
+      summary: Store one or more app logs
+      description: >
+        Accepts a single log object, an array of log objects, or a gzip-compressed
+        JSON payload. Each write also updates denormalized device and session tables
+        used by the read endpoints.
+      tags:
+        - Logs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CreateAppLog'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/CreateAppLog'
+            examples:
+              singleLog:
+                summary: Single log
+                value:
+                  sessionID: "session-123"
+                  deviceID: "device-456"
+                  message: "User opened paywall"
+                  action: "paywall_opened"
+                  creationDate: "2025-04-05T18:30:00Z"
+                  appVersion: "1.4.2"
+                  deviceType: "iPhone16,2"
+                  region: "US"
+                  locale: "en_US"
+                  type: "info"
+                  category: "navigation"
+              logArray:
+                summary: Array of logs
+                value:
+                  - sessionID: "session-123"
+                    deviceID: "device-456"
+                    message: "User opened paywall"
+                    action: "paywall_opened"
+                    creationDate: "2025-04-05T18:30:00Z"
+                    appVersion: "1.4.2"
+                    deviceType: "iPhone16,2"
+                    region: "US"
+                    locale: "en_US"
+                    type: "info"
+                    category: "navigation"
+                  - sessionID: "session-123"
+                    deviceID: "device-456"
+                    message: "Subscription button tapped"
+                    action: "subscription_tapped"
+                    creationDate: "2025-04-05T18:30:05Z"
+                    appVersion: "1.4.2"
+                    deviceType: "iPhone16,2"
+                    region: "US"
+                    locale: "en_US"
+                    type: "info"
+                    category: "subscription"
+          application/gzip:
+            schema:
+              type: string
+              format: binary
+            examples:
+              gzippedLogArray:
+                summary: Gzipped JSON array
+                description: >
+                  A gzip-compressed byte stream containing the same JSON array shown
+                  in the application/json example.
+      responses:
+        '201':
+          description: Logs were stored successfully.
+        '400':
+          description: Invalid or unsupported payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Payload exceeds request limits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listLogs
+      summary: List logs by device or session
+      description: Returns logs filtered by exactly one identifier.
+      tags:
+        - Logs
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: deviceID
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Device identifier. Use this or sessionID, but not both.
+        - name: sessionID
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Session identifier. Use this or deviceID, but not both.
+      responses:
+        '200':
+          description: Matching logs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLogsResponse'
+        '400':
+          description: Missing or invalid query parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/devices:
+    get:
+      operationId: listDevices
+      summary: List known devices
+      description: >
+        Returns the device summary table with the latest known device metadata and
+        last seen timestamp for each deviceID.
+      tags:
+        - Devices
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Device summaries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDevicesResponse'
+        '400':
+          description: Invalid pagination parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/devices/{deviceID}/sessions:
+    get:
+      operationId: listSessionsForDevice
+      summary: List session IDs for a device
+      description: Returns denormalized session summaries for the specified device.
+      tags:
+        - Sessions
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Session summaries for the device.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSessionsResponse'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 100
+      description: Maximum number of items to return.
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Number of items to skip.
+  schemas:
+    CreateAppLog:
+      type: object
+      additionalProperties: false
+      required:
+        - sessionID
+        - deviceID
+        - action
+        - creationDate
+        - appVersion
+        - deviceType
+        - region
+        - locale
+        - type
+        - category
+      properties:
+        sessionID:
+          type: string
+          example: "session-123"
+        deviceID:
+          type: string
+          example: "device-456"
+        message:
+          type:
+            - string
+            - "null"
+          example: "User opened paywall"
+        action:
+          type: string
+          example: "paywall_opened"
+        creationDate:
+          description: ISO-8601 string, Unix timestamp in seconds, or Unix timestamp in milliseconds.
+          oneOf:
+            - type: string
+              format: date-time
+              example: "2025-04-05T18:30:00Z"
+            - type: number
+              example: 1743877800
+            - type: integer
+              example: 1743877800000
+        appVersion:
+          type: string
+          example: "1.4.2"
+        deviceType:
+          type: string
+          example: "iPhone16,2"
+        region:
+          type: string
+          example: "US"
+        locale:
+          type: string
+          example: "en_US"
+        type:
+          type: string
+          example: "info"
+        category:
+          type: string
+          example: "navigation"
+    AppLog:
+      allOf:
+        - $ref: '#/components/schemas/CreateAppLog'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "6CB69F2C-287D-4A5E-8A8B-9D2B1A5336B4"
+    AppDevice:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        deviceID:
+          type: string
+          example: "device-456"
+        lastDeviceType:
+          type: string
+          example: "iPhone16,2"
+        lastAppVersion:
+          type: string
+          example: "1.4.2"
+        lastRegion:
+          type: string
+          example: "US"
+        lastLocale:
+          type: string
+          example: "en_US"
+        lastSeenAt:
+          type: string
+          format: date-time
+          example: "2025-04-05T18:30:05Z"
+    AppSession:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        sessionID:
+          type: string
+          example: "session-123"
+        deviceID:
+          type: string
+          example: "device-456"
+        firstLogAt:
+          type: string
+          format: date-time
+          example: "2025-04-05T18:30:00Z"
+        lastLogAt:
+          type: string
+          format: date-time
+          example: "2025-04-05T18:30:05Z"
+    PaginatedLogsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppLog'
+        total:
+          type: integer
+          example: 1240
+        limit:
+          type: integer
+          example: 100
+        offset:
+          type: integer
+          example: 0
+    PaginatedDevicesResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDevice'
+        total:
+          type: integer
+          example: 87
+        limit:
+          type: integer
+          example: 100
+        offset:
+          type: integer
+          example: 0
+    PaginatedSessionsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppSession'
+        total:
+          type: integer
+          example: 56
+        limit:
+          type: integer
+          example: 100
+        offset:
+          type: integer
+          example: 0
+    ErrorResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        error:
+          type: boolean
+          example: true
+        reason:
+          type: string
+          example: Provide either deviceID or sessionID.

@@ -36,6 +36,7 @@
 		61399C622F41223F008A0F49 /* Routka.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Routka.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61399C712F412241008A0F49 /* RoutkaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoutkaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61399C7B2F412241008A0F49 /* RoutkaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoutkaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61A245602F82FB8D00141E19 /* LogService */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LogService; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -112,6 +113,7 @@
 				61399C7E2F412241008A0F49 /* RoutkaUITests */,
 				61399C632F41223F008A0F49 /* Products */,
 				6122F42B2F431E3100E20474 /* Routka.icon */,
+				61A245602F82FB8D00141E19 /* LogService */,
 			);
 			sourceTree = "<group>";
 		};
