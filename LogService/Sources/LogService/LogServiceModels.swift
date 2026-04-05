@@ -22,6 +22,7 @@ public enum LogsUploadPayload: Sendable, Hashable {
 }
 
 public struct CreateAppLogRequest: Sendable, Hashable, Codable {
+    public let id: String
     public let sessionID: String
     public let deviceID: String
     public let message: String?
@@ -35,6 +36,7 @@ public struct CreateAppLogRequest: Sendable, Hashable, Codable {
     public let category: String
 
     public init(
+        id: String,
         sessionID: String,
         deviceID: String,
         message: String? = nil,
@@ -47,6 +49,7 @@ public struct CreateAppLogRequest: Sendable, Hashable, Codable {
         type: String,
         category: String
     ) {
+        self.id = id
         self.sessionID = sessionID
         self.deviceID = deviceID
         self.message = message

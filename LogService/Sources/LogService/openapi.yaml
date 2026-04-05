@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: RoutkaBack Log API
-  version: 1.2.0
+  version: 1.3.0
   description: OpenAPI specification for ingesting and querying iOS application logs.
 
 servers:
@@ -38,6 +38,7 @@ paths:
               singleLog:
                 summary: Single log
                 value:
+                  id: "log-001"
                   sessionID: "session-123"
                   deviceID: "device-456"
                   message: "User opened paywall"
@@ -52,7 +53,8 @@ paths:
               logArray:
                 summary: Array of logs
                 value:
-                  - sessionID: "session-123"
+                  - id: "log-001"
+                    sessionID: "session-123"
                     deviceID: "device-456"
                     message: "User opened paywall"
                     action: "paywall_opened"
@@ -63,7 +65,8 @@ paths:
                     locale: "en_US"
                     type: "info"
                     category: "navigation"
-                  - sessionID: "session-123"
+                  - id: "log-002"
+                    sessionID: "session-123"
                     deviceID: "device-456"
                     message: "Subscription button tapped"
                     action: "subscription_tapped"
@@ -215,6 +218,7 @@ components:
       type: object
       additionalProperties: false
       required:
+        - id
         - sessionID
         - deviceID
         - action
@@ -226,6 +230,9 @@ components:
         - type
         - category
       properties:
+        id:
+          type: string
+          example: "log-001"
         sessionID:
           type: string
           example: "session-123"
@@ -269,14 +276,7 @@ components:
           type: string
           example: "navigation"
     AppLog:
-      allOf:
-        - $ref: '#/components/schemas/CreateAppLog'
-        - type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-              example: "6CB69F2C-287D-4A5E-8A8B-9D2B1A5336B4"
+      $ref: '#/components/schemas/CreateAppLog'
     AppDevice:
       type: object
       additionalProperties: false
