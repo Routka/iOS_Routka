@@ -18,6 +18,8 @@ struct BaseMapView: View {
     
     @State private var showMeasuredTracksSelector = false
     
+    @Namespace var animationNamespace
+    
     private let dependencies: DependencyManager
     /// Creates a new map view bound to the provided view model instance.
     init(vm: any BaseMapViewModelProtocol,
@@ -79,6 +81,7 @@ struct BaseMapView: View {
         .sheet(isPresented: $showMeasuredTracksSelector) {
             TrackPresetsView(vm: TrackPresetsViewModel(baseMapVM: vm,
                                                        dependencies: dependencies))
+            .navigationTransition(.zoom(sourceID: "measure_presets_transition", in: animationNamespace))
         }
     }
     
@@ -154,6 +157,7 @@ struct BaseMapView: View {
                                     .combined(with: .opacity)
                             ))
                             .zIndex(1)
+                            .matchedTransitionSource(id: "measure_presets_transition", in: animationNamespace)
                     }
                     startStopButton
                 }
