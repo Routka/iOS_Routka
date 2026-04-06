@@ -201,22 +201,22 @@ final class BaseMapViewModel: BaseMapViewModelProtocol {
                                            date: overrideTimestamp ?? location.timestamp)
         self.currentSpeed = max(0,location.speed)
         
-        let suggestedAction = try? self.trackRecordingService.appendTrackPosition(trackPoint)
-        
-        switch suggestedAction {
-        case .immediate:
-            // Received command to stop immedietly because of AutoStopPolicy
-            try? await stopAndSaveAsMeasuredTrack()
-        default:
-            // Do nothing, continue
-            break
+        if self.trackRecordingService.isRecording {
+            let suggestedAction = try? self.trackRecordingService.appendTrackPosition(trackPoint)
+            
+            switch suggestedAction {
+            case .immediate:
+                // Received command to stop immedietly because of AutoStopPolicy
+                try? await stopAndSaveAsMeasuredTrack()
+            default:
+                // Do nothing, continue
+                break
+            }
         }
         
         await self.checkIfInReplayCheckpoint(location)
         
         await self.replayValidator?.passedPoint(trackPoint)
-        
-        
         
     }
     

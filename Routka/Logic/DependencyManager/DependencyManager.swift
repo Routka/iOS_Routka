@@ -7,6 +7,8 @@
 
 import Foundation
 
+let dependencyManagerLogger = MainLogger("Dependencies")
+
 final class DependencyManager {
     let locationService: any LocationServiceProtocol
     let storageService: any TrackStorageProtocol
@@ -42,5 +44,19 @@ final class DependencyManager {
         self.measuredTrackStorageService = measuredTrackStorageService
         self.trackFileService = trackFileService
         self.routers = routers
+        dependencyManagerLogger.log("Initialized dependency manager",
+                                    message: """
+                                    locationService: \(String(describing: type(of: locationService)))
+                                    storageService: \(String(describing: type(of: storageService)))
+                                    mapSnapshotGenerator: \(String(describing: type(of: mapSnapshotGenerator)))
+                                    mapSnippetCache: \(String(describing: type(of: mapSnippetCache)))
+                                    trackReplayCoordinator: \(String(describing: type(of: trackReplayCoordinator)))
+                                    tabRouter: \(String(describing: type(of: tabRouter)))
+                                    cacheFileManager: \(String(describing: type(of: cacheFileManager)))
+                                    measuredTrackStorageService: \(String(describing: type(of: measuredTrackStorageService)))
+                                    trackFileService: \(String(describing: type(of: trackFileService)))
+                                    routers: \(routers.keys.sorted().joined(separator: ", "))
+                                    """,
+                                    .info)
     }
 }

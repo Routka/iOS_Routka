@@ -8,6 +8,8 @@
 import Foundation
 import Combine
 
+nonisolated let trackReplayCoordinatorLogger = MainLogger("TrackReplayCoordinator")
+
 enum TrackReplayAction {
     case select(Track)
     case deselect
@@ -27,9 +29,13 @@ final actor TrackReplayCoordinator: TrackReplayCoordinatorProtocol {
     
     func selectTrackToReplay(_ track: Track) {
         selectedTrackPublisher.send(.select(track))
+        trackReplayCoordinatorLogger.log("Selected track for replay",
+                                         message: "trackID: \(track.id)",
+                                         .info)
     }
     
     func deselectReplay() {
         selectedTrackPublisher.send(.deselect)
+        trackReplayCoordinatorLogger.log("Deselected replay track", .info)
     }
 }
