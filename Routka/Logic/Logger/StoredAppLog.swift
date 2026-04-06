@@ -17,6 +17,7 @@ final class StoredAppLog {
     var deviceID: String
     var message: String?
     var action: String
+    var source: String
     var creationDate: Date
     var appVersion: String
     var deviceType: String
@@ -31,6 +32,7 @@ final class StoredAppLog {
         deviceID: String,
         message: String? = nil,
         action: String,
+        source: String,
         creationDate: Date,
         appVersion: String,
         deviceType: String,
@@ -44,6 +46,7 @@ final class StoredAppLog {
         self.deviceID = deviceID
         self.message = message
         self.action = action
+        self.source = source
         self.creationDate = creationDate
         self.appVersion = appVersion
         self.deviceType = deviceType
@@ -60,6 +63,7 @@ final class StoredAppLog {
             deviceID: record.deviceID,
             message: record.message,
             action: record.action,
+            source: record.source,
             creationDate: record.creationDate,
             appVersion: record.appVersion,
             deviceType: record.deviceType,
@@ -77,6 +81,7 @@ final class StoredAppLog {
             deviceID: deviceID,
             message: message,
             action: action,
+            source: source,
             creationDate: creationDate,
             appVersion: appVersion,
             deviceType: deviceType,

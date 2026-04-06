@@ -53,11 +53,12 @@ public final actor MainLogger {
         
         let fileName = URL(string: "\(file)")?.lastPathComponent.replacingOccurrences(of: ".swift", with: "")
         
-        self.logger.log("\(action) \(message ?? "-", privacy: .public)\nfile: \(fileName ?? ""), function: \(function), line: \(line)")
-        await LogService.shared.registerLog(action: action + "\nfile: \(fileName ?? ""), function: \(function), line: \(line)",
+        self.logger.log(">\(action) \n>>\(message ?? "-", privacy: .public)\n>>>file: \(fileName ?? ""), function: \(function), line: \(line)")
+        await LogService.shared.registerLog(action: action,
                                             message: message,
                                             type: type.rawValue,
                                             creationDate: date,
-                                            category: self.category)
+                                            category: self.category,
+                                            source: "file: \(fileName ?? ""), function: \(function), line: \(line)")
     }
 }

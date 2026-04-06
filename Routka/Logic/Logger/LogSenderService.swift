@@ -87,7 +87,8 @@ final class LogService {
                      message: String?,
                      type: String,
                      creationDate: Date,
-                     category: String) async {
+                     category: String,
+                     source: String) async {
         // Capture needed values up front to avoid capturing self inside the Task
         let sessionID = self.sessionID
         let deviceID = self.deviceID
@@ -102,6 +103,7 @@ final class LogService {
                                            deviceID: deviceID,
                                            message: message,
                                            action: action,
+                                           source: source,
                                            creationDate: creationDate,
                                            appVersion: appVersion,
                                            deviceType: deviceType,
