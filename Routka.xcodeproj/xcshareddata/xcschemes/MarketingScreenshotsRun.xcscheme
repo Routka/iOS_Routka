@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "2630"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      buildArchitectures = "Automatic">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61399C612F41223F008A0F49"
+               BuildableName = "Routka.app"
+               BlueprintName = "Routka"
+               ReferencedContainer = "container:Routka.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "set -eu&#10;&#10;LOG_FILE=&quot;/tmp/routka_marketing_screenshots_post_action.log&quot;&#10;exec &gt;&quot;$LOG_FILE&quot; 2&gt;&amp;1&#10;&#10;echo &quot;========== post-action started ==========&quot;&#10;date&#10;echo &quot;PWD=$PWD&quot;&#10;echo &quot;PROJECT_DIR=${PROJECT_DIR:-&lt;unset&gt;}&quot;&#10;echo &quot;HOME=${HOME:-&lt;unset&gt;}&quot;&#10;&#10;derived_data_root=&quot;${HOME}/Library/Developer/Xcode/DerivedData&quot;&#10;scheme_name=&quot;MarketingScreenshotsRun&quot;&#10;echo &quot;derived_data_root=$derived_data_root&quot;&#10;echo &quot;scheme_name=$scheme_name&quot;&#10;&#10;echo &quot;waiting briefly so Xcode can finish writing the result bundle&quot;&#10;sleep 2&#10;&#10;latest_xcresult=&quot;&quot;&#10;attempt=1&#10;while [ &quot;$attempt&quot; -le 30 ]; do&#10;  echo &quot;search attempt $attempt&quot;&#10;&#10;  latest_xcresult=$(&#10;    find &quot;$derived_data_root&quot; -path &quot;*/Logs/Test/Test-${scheme_name}-*.xcresult&quot; -print 2&gt;/dev/null |&#10;    while IFS= read -r path; do&#10;      if [ -f &quot;$path/Info.plist&quot; ]; then&#10;        stat -f &quot;%m %N&quot; &quot;$path&quot;&#10;      fi&#10;    done |&#10;    sort -rn |&#10;    head -n 1 |&#10;    cut -d&apos; &apos; -f2-&#10;  )&#10;&#10;  echo &quot;latest_xcresult=${latest_xcresult:-&lt;empty&gt;}&quot;&#10;&#10;  if [ -n &quot;${latest_xcresult:-}&quot; ] &amp;&amp; [ -f &quot;$latest_xcresult/Info.plist&quot; ]; then&#10;    echo &quot;xcresult bundle is ready&quot;&#10;    break&#10;  fi&#10;&#10;  latest_xcresult=&quot;&quot;&#10;  attempt=$((attempt + 1))&#10;  sleep 1&#10;done&#10;&#10;if [ -z &quot;${latest_xcresult:-}&quot; ]; then&#10;  echo &quot;No ready xcresult found for $scheme_name&quot;&#10;  exit 1&#10;fi&#10;&#10;output_dir=&quot;${HOME}/Desktop/RoutkaMarketing&quot; #&quot;${PROJECT_DIR:-$PWD}/ExportedScreenshots&quot;&#10;echo &quot;output_dir=$output_dir&quot;&#10;&#10;manifest_path=&quot;$output_dir/manifest.json&quot;&#10;export_attempt=1&#10;while [ &quot;$export_attempt&quot; -le 10 ]; do&#10;  echo &quot;export attempt $export_attempt&quot;&#10;  rm -rf &quot;$output_dir&quot;&#10;  mkdir -p &quot;$output_dir&quot;&#10;&#10;  if /usr/bin/xcrun xcresulttool export attachments \&#10;    --path &quot;$latest_xcresult&quot; \&#10;    --output-path &quot;$output_dir&quot;; then&#10;    echo &quot;export finished&quot;&#10;  else&#10;    echo &quot;attachment export failed&quot;&#10;  fi&#10;&#10;  echo &quot;manifest_path=$manifest_path&quot;&#10;  if [ -f &quot;$manifest_path&quot; ] &amp;&amp; /usr/bin/jq -e &apos;length &gt; 0&apos; &quot;$manifest_path&quot; &gt;/dev/null; then&#10;    echo &quot;attachment manifest is ready&quot;&#10;    break&#10;  fi&#10;&#10;  echo &quot;attachment manifest is empty or missing&quot;&#10;  export_attempt=$((export_attempt + 1))&#10;  sleep 1&#10;done&#10;&#10;if [ ! -f &quot;$manifest_path&quot; ]; then&#10;  echo &quot;manifest.json missing&quot;&#10;  ls -la &quot;$output_dir&quot; || true&#10;  exit 1&#10;fi&#10;&#10;echo &quot;manifest contents:&quot;&#10;cat &quot;$manifest_path&quot;&#10;&#10;echo &quot;checking whether this xcresult contains RoutkaMarketingScreenshotUITests&quot;&#10;if ! /usr/bin/jq -e &apos;.[] | select(.testIdentifier | contains(&quot;RoutkaMarketingScreenshotUITests/&quot;))&apos; &quot;$manifest_path&quot; &gt;/dev/null; then&#10;  echo &quot;No RoutkaMarketingScreenshotUITests entries found, skipping rename/export handling&quot;&#10;  exit 0&#10;fi&#10;&#10;echo &quot;renaming exported files to suggested names&quot;&#10;/usr/bin/jq -r &apos;&#10;  .[]&#10;  | select(.testIdentifier | contains(&quot;RoutkaMarketingScreenshotUITests/&quot;))&#10;  | .attachments[]&#10;  | [.exportedFileName, .suggestedHumanReadableName]&#10;  | @tsv&#10;&apos; &quot;$manifest_path&quot; |&#10;while IFS=&quot;$(printf &apos;\t&apos;)&quot; read -r from to; do&#10;  echo &quot;rename candidate: $from -&gt; $to&quot;&#10;&#10;  if [ -z &quot;$from&quot; ] || [ -z &quot;$to&quot; ]; then&#10;    echo &quot;skipping invalid rename entry&quot;&#10;    continue&#10;  fi&#10;&#10;  source_path=&quot;$output_dir/$from&quot;&#10;  destination_path=&quot;$output_dir/$to&quot;&#10;&#10;  if [ ! -f &quot;$source_path&quot; ]; then&#10;    echo &quot;source file missing: $source_path&quot;&#10;    continue&#10;  fi&#10;&#10;  if [ -e &quot;$destination_path&quot; ]; then&#10;    echo &quot;destination exists, removing old file: $destination_path&quot;&#10;    rm -f &quot;$destination_path&quot;&#10;  fi&#10;&#10;  mv &quot;$source_path&quot; &quot;$destination_path&quot;&#10;  echo &quot;renamed to $destination_path&quot;&#10;done&#10;&#10;rm -f &quot;$manifest_path&quot;&#10;echo &quot;deleted manifest: $manifest_path&quot;&#10;&#10;echo &quot;final output:&quot;&#10;ls -la &quot;$output_dir&quot; || true&#10;&#10;echo &quot;Exported attachments from: $latest_xcresult&quot;&#10;echo &quot;Log file: $LOG_FILE&quot;&#10;echo &quot;========== post-action finished ==========&quot;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "61E99E202F85B1140087320E"
+                     BuildableName = "MarketingScreenshotsRun.xctest"
+                     BlueprintName = "MarketingScreenshotsRun"
+                     ReferencedContainer = "container:Routka.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:MarketingScreenshots.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61399C612F41223F008A0F49"
+            BuildableName = "Routka.app"
+            BlueprintName = "Routka"
+            ReferencedContainer = "container:Routka.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61399C612F41223F008A0F49"
+            BuildableName = "Routka.app"
+            BlueprintName = "Routka"
+            ReferencedContainer = "container:Routka.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

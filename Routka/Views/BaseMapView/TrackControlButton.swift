@@ -50,6 +50,7 @@ struct TrackControlButton: View {
                         .combined(with: .scale)
                     ))
             }
+            .accessibilityIdentifier(buttonType.accessibilityIdentifier)
             .glassEffect(.regular.tint(buttonType.tint)
                 .interactive(),
                          in: Capsule())
@@ -110,6 +111,15 @@ struct TrackControlButton: View {
                     .top
             case .stop:
                     .bottom
+            }
+        }
+
+        var accessibilityIdentifier: String {
+            switch self {
+            case .start:
+                "startRecordingButton"
+            case .stop:
+                "stopRecordingButton"
             }
         }
     }

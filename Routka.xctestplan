@@ -25,6 +25,9 @@
       }
     },
     {
+      "skippedTests" : [
+        "RoutkaMarketingScreenshotUITests"
+      ],
       "target" : {
         "containerPath" : "container:Routka.xcodeproj",
         "identifier" : "61399C7A2F412241008A0F49",

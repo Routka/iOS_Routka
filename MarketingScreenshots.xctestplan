@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "30DA173C-62C5-4132-B130-CEEB21E3C902",
+      "name" : "Ru Config",
+      "options" : {
+        "language" : "ru"
+      }
+    },
+    {
+      "id" : "FEC531EA-3CB7-44E4-AD1C-AB5C6BCF2F9A",
+      "name" : "En Config",
+      "options" : {
+        "language" : "en"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Routka.xcodeproj",
+        "identifier" : "61E99E202F85B1140087320E",
+        "name" : "MarketingScreenshotsRun"
+      }
+    }
+  ],
+  "version" : 1
+}

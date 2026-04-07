@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6122F42C2F431E3100E20474 /* Routka.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6122F42B2F431E3100E20474 /* Routka.icon */; };
+		61561F4F2F85A784006129E5 /* MarketingScreenshots.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61561F4E2F85A784006129E5 /* MarketingScreenshots.xctestplan */; };
 		61A247C62F840B8A00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A247C52F840B8A00141E19 /* LogService */; };
 		61A248FF2F841B0C00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A248FE2F841B0C00141E19 /* LogService */; };
 		61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 61BF8F1B2F51DD78000808F6 /* SimpleRouter */; };
@@ -30,6 +31,13 @@
 			remoteGlobalIDString = 61399C612F41223F008A0F49;
 			remoteInfo = DuckRunner;
 		};
+		61E99E272F85B1140087320E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61399C5A2F41223F008A0F49 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 61399C612F41223F008A0F49;
+			remoteInfo = Routka;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +46,8 @@
 		61399C622F41223F008A0F49 /* Routka.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Routka.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61399C712F412241008A0F49 /* RoutkaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoutkaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61399C7B2F412241008A0F49 /* RoutkaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoutkaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61561F4E2F85A784006129E5 /* MarketingScreenshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MarketingScreenshots.xctestplan; sourceTree = "<group>"; };
+		61E99E212F85B1140087320E /* MarketingScreenshotsRun.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarketingScreenshotsRun.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -74,6 +84,11 @@
 			path = Locales;
 			sourceTree = "<group>";
 		};
+		61E99E222F85B1140087320E /* MarketingScreenshotsRun */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MarketingScreenshotsRun;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,17 +118,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		61E99E1E2F85B1140087320E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		61399C592F41223F008A0F49 = {
 			isa = PBXGroup;
 			children = (
+				61561F4E2F85A784006129E5 /* MarketingScreenshots.xctestplan */,
 				61A23A412F808DFF00141E19 /* Locales */,
 				611CD5A32F423F4300979943 /* Routka.xctestplan */,
 				61399C642F41223F008A0F49 /* Routka */,
 				61399C742F412241008A0F49 /* RoutkaTests */,
 				61399C7E2F412241008A0F49 /* RoutkaUITests */,
+				61E99E222F85B1140087320E /* MarketingScreenshotsRun */,
 				61399C632F41223F008A0F49 /* Products */,
 				6122F42B2F431E3100E20474 /* Routka.icon */,
 				61A2456B2F83190700141E19 /* Frameworks */,
@@ -126,6 +150,7 @@
 				61399C622F41223F008A0F49 /* Routka.app */,
 				61399C712F412241008A0F49 /* RoutkaTests.xctest */,
 				61399C7B2F412241008A0F49 /* RoutkaUITests.xctest */,
+				61E99E212F85B1140087320E /* MarketingScreenshotsRun.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -214,6 +239,29 @@
 			productReference = 61399C7B2F412241008A0F49 /* RoutkaUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		61E99E202F85B1140087320E /* MarketingScreenshotsRun */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 61E99E2B2F85B1140087320E /* Build configuration list for PBXNativeTarget "MarketingScreenshotsRun" */;
+			buildPhases = (
+				61E99E1D2F85B1140087320E /* Sources */,
+				61E99E1E2F85B1140087320E /* Frameworks */,
+				61E99E1F2F85B1140087320E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				61E99E282F85B1140087320E /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				61E99E222F85B1140087320E /* MarketingScreenshotsRun */,
+			);
+			name = MarketingScreenshotsRun;
+			packageProductDependencies = (
+			);
+			productName = MarketingScreenshotsRun;
+			productReference = 61E99E212F85B1140087320E /* MarketingScreenshotsRun.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -221,7 +269,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					61399C612F41223F008A0F49 = {
@@ -233,6 +281,10 @@
 					};
 					61399C7A2F412241008A0F49 = {
 						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 61399C612F41223F008A0F49;
+					};
+					61E99E202F85B1140087320E = {
+						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 61399C612F41223F008A0F49;
 					};
 				};
@@ -261,6 +313,7 @@
 				61399C612F41223F008A0F49 /* Routka */,
 				61399C702F412241008A0F49 /* RoutkaTests */,
 				61399C7A2F412241008A0F49 /* RoutkaUITests */,
+				61E99E202F85B1140087320E /* MarketingScreenshotsRun */,
 			);
 		};
 /* End PBXProject section */
@@ -270,6 +323,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61561F4F2F85A784006129E5 /* MarketingScreenshots.xctestplan in Resources */,
 				6122F42C2F431E3100E20474 /* Routka.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -282,6 +336,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		61399C792F412241008A0F49 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		61E99E1F2F85B1140087320E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -312,6 +373,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		61E99E1D2F85B1140087320E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -324,6 +392,11 @@
 			isa = PBXTargetDependency;
 			target = 61399C612F41223F008A0F49 /* Routka */;
 			targetProxy = 61399C7C2F412241008A0F49 /* PBXContainerItemProxy */;
+		};
+		61E99E282F85B1140087320E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 61399C612F41223F008A0F49 /* Routka */;
+			targetProxy = 61E99E272F85B1140087320E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -589,13 +662,14 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vladukha.RoutkaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DuckRunner;
+				TEST_TARGET_NAME = Routka;
 			};
 			name = Debug;
 		};
@@ -609,13 +683,54 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vladukha.RoutkaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DuckRunner;
+				TEST_TARGET_NAME = Routka;
+			};
+			name = Release;
+		};
+		61E99E292F85B1140087320E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SZ24TTUHBL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladukha.MarketingScreenshotsRun;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Routka;
+			};
+			name = Debug;
+		};
+		61E99E2A2F85B1140087320E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SZ24TTUHBL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladukha.MarketingScreenshotsRun;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Routka;
 			};
 			name = Release;
 		};
@@ -654,6 +769,15 @@
 			buildConfigurations = (
 				61399C8C2F412241008A0F49 /* Debug */,
 				61399C8D2F412241008A0F49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		61E99E2B2F85B1140087320E /* Build configuration list for PBXNativeTarget "MarketingScreenshotsRun" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61E99E292F85B1140087320E /* Debug */,
+				61E99E2A2F85B1140087320E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
