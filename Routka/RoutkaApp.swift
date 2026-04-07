@@ -8,7 +8,8 @@
 import SwiftUI
 import SwiftData
 import vladukhaAlerts
-//internal import MapKit
+
+public let mainLogger: MainLogger = .init("RoutkaCategory")
 
 /// The main app entry point for the Routka application.
 @main

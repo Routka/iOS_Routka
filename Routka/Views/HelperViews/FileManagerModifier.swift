@@ -10,6 +10,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 import vladukhaAlerts
 
+let fileTransferUILogger = MainLogger("FileTransferUI")
+
 extension View {
     
     func fileManager(managedBy dependencies: DependencyManager) -> some View {
@@ -35,10 +37,21 @@ private struct FileServiceViewWrapper: ViewModifier {
         content
             .onOpenURL { url in
                 guard url.isFileURL, url.pathExtension.lowercased() == "routka" else {
+                    fileTransferUILogger.log("Ignored opened URL",
+                                             message: "url: \(url.absoluteString)",
+                                             .warning)
                     return
                 }
+                fileTransferUILogger.log("Handling opened track file",
+                                         message: "file: \(url.lastPathComponent)",
+                                         .info)
                 Task { @MainActor in
-                    guard let track = try? await service.importFromFile(url: url) else { return }
+                    guard let track = try? await service.importFromFile(url: url) else {
+                        fileTransferUILogger.log("Failed handling opened track file",
+                                                 message: "file: \(url.lastPathComponent)",
+                                                 .error)
+                        return
+                    }
                     dependencies.tabRouter.selectedTab = "Tracks"
                     dependencies.routers[dependencies.tabRouter.selectedTab]?.popToRoot()
                     dependencies.routers[dependencies.tabRouter.selectedTab]?.push(.trackDetail(track: track, dependencies: dependencies))
@@ -52,12 +65,18 @@ private struct FileServiceViewWrapper: ViewModifier {
                 switch result {
                 case .success(let urls):
                     guard let url = urls.first else { return }
+                    fileTransferUILogger.log("Importer selected file",
+                                             message: "file: \(url.lastPathComponent)",
+                                             .info)
                     Task {
                         do {
                             let importedTrack = try await service.importFromFile(url: url)
                             dependencies.routers[dependencies.tabRouter.selectedTab]?
                                 .push(.trackDetail(track: importedTrack, dependencies: dependencies))
                         } catch {
+                            fileTransferUILogger.log("Importer failed",
+                                                     message: "file: \(url.lastPathComponent), error: \(error.localizedDescription)",
+                                                     .error)
                             await AlertController.shared.showAlert(String(localized: "importing track error alert",
                                                                           table: "ExportImportAlerts"),
                                                                    icon: .angryFail,
@@ -67,6 +86,9 @@ private struct FileServiceViewWrapper: ViewModifier {
                         }
                     }
                 case .failure(let error):
+                    fileTransferUILogger.log("Importer UI failed",
+                                             message: error.localizedDescription,
+                                             .error)
                     Task {
                         await AlertController.shared.showAlert(String(localized: "importing track error alert",
                                                                       table: "ExportImportAlerts"),
@@ -75,15 +97,15 @@ private struct FileServiceViewWrapper: ViewModifier {
                                                                closable: true,
                                                                feedback: .error)
                     }
-//                TODO: Record the error to metric
-                    print(error)
                 }
             }
             .fileMover(isPresented: $service.isExporterPresented,
                        file: service.fileToExport) { result in
                 switch result {
                 case .success(let newURL):
-                    print("Success moving file", newURL)
+                    fileTransferUILogger.log("Exporter moved file",
+                                             message: "destination: \(newURL.lastPathComponent)",
+                                             .info)
                     Task {
                         await AlertController.shared.showAlert(String(localized: "export track success",
                                                                       table: "ExportImportAlerts"),
@@ -93,8 +115,9 @@ private struct FileServiceViewWrapper: ViewModifier {
                                                                feedback: .success)
                     }
                 case .failure(let failure):
-                    print("Failure moving file", failure)
-//                TODO: Record error to metric
+                    fileTransferUILogger.log("Exporter failed",
+                                             message: failure.localizedDescription,
+                                             .error)
                     Task {
                         await AlertController.shared.showAlert(String(localized: "exporting track error alert",
                                                                       table: "ExportImportAlerts"),

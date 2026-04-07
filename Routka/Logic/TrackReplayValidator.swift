@@ -51,7 +51,9 @@ final class TrackReplayValidator {
     ///   - replayingTrack: The original track to validate against.
     ///   - checkPointInterval: Distance in meters between checkpoints along the track.
     init(replayingTrack: Track, checkPointInterval: CLLocationDistance) {
-        replayValidatorLogger.log("Initializing", message: replayingTrack.id, .info)
+        replayValidatorLogger.log("Initializing",
+                                  message: "trackID: \(replayingTrack.id), interval: \(checkPointInterval)",
+                                  .info)
         self.track = replayingTrack
 
         // Build checkpoints every 500 meters starting at the first point
@@ -100,7 +102,9 @@ final class TrackReplayValidator {
             }
             lastCoord = coord
         }
-        replayValidatorLogger.log("Initialized", .info)
+        replayValidatorLogger.log("Initialized",
+                                  message: "trackID: \(replayingTrack.id), checkpoints: \(checkpoints.count)",
+                                  .info)
     }
     
     /// Registers that the user passed near a given point along the replayed path.
@@ -112,10 +116,18 @@ final class TrackReplayValidator {
     /// - Parameter point: The latest user location sample expressed as a `TrackPoint`.
     func passedPoint(_ point: TrackPoint) async {
         guard startReplayCheckpoint?.checkPointPassed == true else {
+            replayValidatorLogger.log("Skipped checkpoint validation",
+                                      message: "Start checkpoint has not been passed yet",
+                                      .warning,
+                                      silent: true)
             return
         }
         
         guard stopReplayCheckpoint?.checkPointPassed == false else {
+            replayValidatorLogger.log("Skipped checkpoint validation",
+                                      message: "Stop checkpoint is already marked as passed",
+                                      .warning,
+                                      silent: true)
             return
         }
         let coordinate = point.position
@@ -157,6 +169,9 @@ final class TrackReplayValidator {
             }
         case .replay:
             // Must be ignored actually, as replaying of a replayed track is a logic error
+            replayValidatorLogger.log("Replay mode validation fallback",
+                                      message: "Track \(track.id) is already a replay track",
+                                      .warning)
             return .allow
         }
     }
@@ -164,6 +179,9 @@ final class TrackReplayValidator {
     func suggestedStopRecording(_ location: CLLocation) -> SuggestedRecordingAction {
         if self.stopReplayCheckpoint?.checkPointPassed == false,
             stopReplayCheckpoint?.isPointInCheckpoint(location.coordinate) == true {
+            replayValidatorLogger.log("Suggested immediate stop",
+                                      message: "trackID: \(track.id)",
+                                      .info)
             return .immediate
         } else {
             return .allow
@@ -191,6 +209,12 @@ final class TrackReplayValidator {
     /// - Returns: A `Double` in 0.0–1.0 representing completion.
     func trackCompletionByCheckpoints() async -> Double {
         let total = checkpoints.count
+        guard total > 0 else {
+            replayValidatorLogger.log("Requested completion for empty checkpoint set",
+                                      message: "trackID: \(track.id)",
+                                      .warning)
+            return 0
+        }
         let passedCheckpoints = checkpoints.count(where: {$0.value.checkPointPassed})
         let percent: Double = Double(passedCheckpoints) / Double(total)
         replayValidatorLogger.log("Asked for completion, its \(percent)", .info)
@@ -198,4 +222,3 @@ final class TrackReplayValidator {
     }
     
 }
-

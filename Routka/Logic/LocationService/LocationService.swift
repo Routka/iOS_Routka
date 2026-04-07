@@ -33,6 +33,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
         self.locationManager = locationManager
         super.init()
         self.locationManager.delegate = self
+        locationServiceLogger.log("Initialized with injected location manager", .info)
     }
     
     public func requestLocationAccess() {
@@ -66,6 +67,8 @@ final class LocationService: NSObject, CLLocationManagerDelegate, LocationServic
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             self.location.send(location)
+        } else {
+            locationServiceLogger.log("Received empty location update", .warning)
         }
     }
     

@@ -8,6 +8,8 @@
 
 import MapKit
 
+let mapSnapshotGeneratorLogger = MainLogger("MapSnapshotGenerator")
+
 /**
  A protocol defining an interface for generating map snapshot images from a given track.
 
@@ -39,6 +41,7 @@ protocol MapSnapshotGeneratorProtocol {
  */
 final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
     init() {
+        mapSnapshotGeneratorLogger.log("Initialized", .info)
     }
     // Source - https://stackoverflow.com/a/35321619
     // Retrieved 2026-02-18, License - CC BY-SA 4.0
@@ -89,6 +92,9 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
     func generateSnapshot(track: Track,
                           size: CGSize
     ) async throws -> UIImage? {
+        mapSnapshotGeneratorLogger.log("Started snapshot generation",
+                                       message: "trackID: \(track.id), points: \(track.points.count), size: \(Int(size.width))x\(Int(size.height))",
+                                       .info)
 //        if let cachedImage = await cache?.getSnippet(for: track, size: size) {
 //            return cachedImage
 //        }
@@ -99,11 +105,29 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
         options.size = size
         options.mapType = .standard
         options.traitCollection = .init(userInterfaceStyle: .dark)
-        guard !Task.isCancelled else { return nil }
+        guard !Task.isCancelled else {
+            mapSnapshotGeneratorLogger.log("Cancelled snapshot generation before start",
+                                           message: "trackID: \(track.id)",
+                                           .warning)
+            return nil
+        }
         //  Create snapshotter
         let snapshotter = MKMapSnapshotter(options: options)
-        let snapshot = try await snapshotter.start()
-        guard !Task.isCancelled else { return nil }
+        let snapshot: MKMapSnapshotter.Snapshot
+        do {
+            snapshot = try await snapshotter.start()
+        } catch {
+            mapSnapshotGeneratorLogger.log("Failed snapshot generation",
+                                           message: "trackID: \(track.id), error: \(error.localizedDescription)",
+                                           .error)
+            throw error
+        }
+        guard !Task.isCancelled else {
+            mapSnapshotGeneratorLogger.log("Cancelled snapshot generation after rendering",
+                                           message: "trackID: \(track.id)",
+                                           .warning)
+            return nil
+        }
         let normalizedPoints = track.points.map { point in
             NormalizedTrackPoint(position: snapshot.point(for: point.position),
                                  speed: point.speed,
@@ -118,13 +142,21 @@ final class MapSnapshotGenerator: MapSnapshotGeneratorProtocol {
             fastestPoint = nil
         }
         let paths = makeColoredPaths(from: normalizedPoints)
-        guard !Task.isCancelled else { return nil }
+        guard !Task.isCancelled else {
+            mapSnapshotGeneratorLogger.log("Cancelled snapshot generation during drawing",
+                                           message: "trackID: \(track.id)",
+                                           .warning)
+            return nil
+        }
         let finalImage = drawColoredPaths(on: snapshot.image,
                                           segments: paths,
                                           lineWidth: 3,
                                           startPoint: normalizedPoints.first?.position,
                                           stopPoint: normalizedPoints.last?.position,
                                           fastestPoint: fastestPoint?.position)
+        mapSnapshotGeneratorLogger.log("Finished snapshot generation",
+                                       message: "trackID: \(track.id)",
+                                       .info)
         return finalImage
     }
 
@@ -321,4 +353,3 @@ import SwiftUI
                    track: .filledTrack)
     .frame(height: 250)
 }
-

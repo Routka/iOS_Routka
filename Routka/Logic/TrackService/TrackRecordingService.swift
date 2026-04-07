@@ -8,6 +8,8 @@ import Combine
 import Foundation
 import UIKit.UIApplication
 
+let trackRecordingServiceLogger = MainLogger("TrackRecordingService")
+
 /// A service responsible for managing in-memory track recording sessions.
 /// This service handles the state and mutation of a live track as the user moves,
 /// including starting, stopping, and updating the track with new position points.
@@ -39,9 +41,11 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
     @discardableResult
     func appendTrackPosition(_ point: TrackPoint) throws(TrackServiceError) -> SuggestedRecordingAction {
         guard currentTrack != nil else {
+            trackRecordingServiceLogger.log("Append failed", message: "No active track", .warning)
             throw.noCurrentTrack
         }
         guard isRecording else {
+            trackRecordingServiceLogger.log("Append failed", message: "Current track is already stopped", .warning)
             throw .currentTrackIsFinished
         }
         
@@ -53,6 +57,9 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         case .reachingSpeed(let cLLocationSpeed):
             self.stopPolicyProgress = max(0, min(1, point.speed/cLLocationSpeed))
             if point.speed >= cLLocationSpeed {
+                trackRecordingServiceLogger.log("Auto stop triggered by speed",
+                                                message: "current: \(point.speed), target: \(cLLocationSpeed)",
+                                                .info)
                 return .immediate
             } else {
                 return .allow
@@ -61,6 +68,9 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
             if let totalDistance = self.currentTrack?.points.totalDistance() {
                 self.stopPolicyProgress = max(0, min(1, totalDistance/cLLocationDistance))
                 if totalDistance >= cLLocationDistance {
+                    trackRecordingServiceLogger.log("Auto stop triggered by distance",
+                                                    message: "current: \(totalDistance), target: \(cLLocationDistance)",
+                                                    .info)
                     return .immediate
                 } else {
                     return .allow
@@ -84,6 +94,9 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         self.isRecording = true
         // Re-enable the idle timer after stopping the track
         UIApplication.shared.isIdleTimerDisabled = true
+        trackRecordingServiceLogger.log("Started track recording",
+                                        message: "stopPolicy: \(String(describing: stopPolicy))",
+                                        .info)
     }
     
     /**
@@ -97,17 +110,25 @@ final class TrackRecordingService: TrackRecordingServiceProtocol {
         // Re-enable the idle timer after stopping the track
         UIApplication.shared.isIdleTimerDisabled = false
         guard let currentTrack = currentTrack else {
+            trackRecordingServiceLogger.log("Stop failed", message: "No active track", .warning)
             throw .noCurrentTrack
         }
         self.isRecording = false
+        trackRecordingServiceLogger.log("Stopped track recording",
+                                        message: "trackID: \(currentTrack.id), points: \(currentTrack.points.count)",
+                                        .info)
         return currentTrack
     }
     
     /// Clears the current track and resets the recording state and stop policy to default.
     func clearTrack() {
+        let clearedTrackID = self.currentTrack?.id
         self.currentTrack = nil
         self.isRecording = false
         self.stopPolicy = .manual
         self.stopPolicyProgress = 0.0
+        trackRecordingServiceLogger.log("Cleared track recording",
+                                        message: "trackID: \(clearedTrackID ?? "none")",
+                                        .info)
     }
 }

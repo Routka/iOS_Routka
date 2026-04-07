@@ -41,6 +41,7 @@ final class TrackRepository: TrackStorageProtocol {
     /// Initializes the repository with a Core Data container.
     init() {
         self.container = publicContainer
+        trackRepositoryLogger.log("Initialized", .info)
     }
     
     /// The NSPersistentContainer managing Core Data storage.
@@ -65,6 +66,9 @@ final class TrackRepository: TrackStorageProtocol {
                 let existingFav = (try? context.fetch(request)) ?? []
                 if existingFav.first != nil {
                     // track already exists, so we return it and exit the continuation
+                    trackRepositoryLogger.log("Skipped adding track",
+                                              message: "Track already exists with id \(track.id)",
+                                              .warning)
                     continuation.resume()
                     return
                 }
@@ -72,8 +76,17 @@ final class TrackRepository: TrackStorageProtocol {
                 // Creating the record
                 let _ = TrackDTO(context: context, track)
                 if context.hasChanges {
-                    try? context.save()
-                    self.sendAction(.created(track))
+                    do {
+                        try context.save()
+                        self.sendAction(.created(track))
+                        trackRepositoryLogger.log("Stored track",
+                                                  message: "id: \(track.id), points: \(track.points.count)",
+                                                  .info)
+                    } catch {
+                        trackRepositoryLogger.log("Failed saving created track",
+                                                  message: error.localizedDescription,
+                                                  .error)
+                    }
                 }
                 continuation.resume()
             }
@@ -93,7 +106,12 @@ final class TrackRepository: TrackStorageProtocol {
                         if context.hasChanges {
                             try context.save()
                             self.sendAction(.deleted(track))
+                            trackRepositoryLogger.log("Deleted track", message: "id: \(track.id)", .info)
                         }
+                    } else {
+                        trackRepositoryLogger.log("Delete skipped",
+                                                  message: "No stored track found for id \(track.id)",
+                                                  .warning)
                     }
                 } catch {
                     trackRepositoryLogger.log("Failed deleting the track", message: error.localizedDescription, .error)
@@ -121,7 +139,14 @@ final class TrackRepository: TrackStorageProtocol {
                         if context.hasChanges {
                             try context.save()
                             self.sendAction(.updated(track))
+                            trackRepositoryLogger.log("Updated track",
+                                                      message: "id: \(track.id), points: \(track.points.count)",
+                                                      .info)
                         }
+                    } else {
+                        trackRepositoryLogger.log("Update skipped",
+                                                  message: "No stored track found for id \(track.id)",
+                                                  .warning)
                     }
                 } catch {
                     trackRepositoryLogger.log("Failed updating the track", message: error.localizedDescription, .error)
@@ -146,6 +171,9 @@ final class TrackRepository: TrackStorageProtocol {
                 do {
                     let items = try context.fetch(request)
                     let dtos = items.compactMap { Track($0) }
+                    trackRepositoryLogger.log("Fetched tracks",
+                                              message: "type: \(trackType.rawValue), count: \(dtos.count), limit: \(limit?.description ?? "none")",
+                                              .info)
                     continuation.resume(returning: dtos)
                 } catch {
                     trackRepositoryLogger.log("Failed fetching the tracks", message: error.localizedDescription, .error)
@@ -169,8 +197,19 @@ final class TrackRepository: TrackStorageProtocol {
                 let measureNilPredicate = NSPredicate(format: "trackType == %@", trackType.rawValue)
                 request.predicate = NSCompoundPredicate(type: .and, subpredicates: [datePredicate, measureNilPredicate])
                 request.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
-                let tracks = (try? context.fetch(request)) ?? []
-                continuation.resume(returning: tracks.map({Track($0)}))
+                do {
+                    let tracks = try context.fetch(request)
+                    let models = tracks.map({ Track($0) })
+                    trackRepositoryLogger.log("Fetched tracks for date",
+                                              message: "date: \(date), type: \(trackType.rawValue), count: \(models.count)",
+                                              .info)
+                    continuation.resume(returning: models)
+                } catch {
+                    trackRepositoryLogger.log("Failed fetching tracks for date",
+                                              message: error.localizedDescription,
+                                              .error)
+                    continuation.resume(returning: [])
+                }
             }
         }
     }
@@ -185,9 +224,20 @@ final class TrackRepository: TrackStorageProtocol {
                 let parentPredicate = NSPredicate(format: "parentID == %@", parent)
                 let measureNilPredicate = NSPredicate(format: "trackType == %@", trackType.rawValue)
                 request.predicate = NSCompoundPredicate(type: .and, subpredicates: [parentPredicate, measureNilPredicate])
-                
-                let tracks = (try? context.fetch(request)) ?? []
-                continuation.resume(returning: tracks.map({Track($0)}))
+
+                do {
+                    let tracks = try context.fetch(request)
+                    let models = tracks.map({ Track($0) })
+                    trackRepositoryLogger.log("Fetched tracks by parent",
+                                              message: "parentID: \(parent), type: \(trackType.rawValue), count: \(models.count)",
+                                              .info)
+                    continuation.resume(returning: models)
+                } catch {
+                    trackRepositoryLogger.log("Failed fetching tracks by parent",
+                                              message: error.localizedDescription,
+                                              .error)
+                    continuation.resume(returning: [])
+                }
             }
         }
     }
@@ -201,10 +251,19 @@ final class TrackRepository: TrackStorageProtocol {
                 let request: NSFetchRequest<TrackDTO> = TrackDTO.fetchRequest()
                 request.predicate = NSPredicate(format: "id == %@", id)
                 request.fetchLimit = 1
-                let tracks = (try? context.fetch(request)) ?? []
-                if let track = tracks.first {
-                    continuation.resume(returning: Track(track))
-                } else {
+                do {
+                    let tracks = try context.fetch(request)
+                    if let track = tracks.first {
+                        trackRepositoryLogger.log("Fetched track by id", message: "id: \(id)", .info)
+                        continuation.resume(returning: Track(track))
+                    } else {
+                        trackRepositoryLogger.log("Track not found", message: "id: \(id)", .warning)
+                        continuation.resume(returning: nil)
+                    }
+                } catch {
+                    trackRepositoryLogger.log("Failed fetching track by id",
+                                              message: error.localizedDescription,
+                                              .error)
                     continuation.resume(returning: nil)
                 }
             }

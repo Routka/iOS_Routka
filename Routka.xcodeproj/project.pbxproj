@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6122F42C2F431E3100E20474 /* Routka.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6122F42B2F431E3100E20474 /* Routka.icon */; };
+		61A247C62F840B8A00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A247C52F840B8A00141E19 /* LogService */; };
+		61A248FF2F841B0C00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A248FE2F841B0C00141E19 /* LogService */; };
 		61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 61BF8F1B2F51DD78000808F6 /* SimpleRouter */; };
 		61C220562F572409003846E3 /* FlowLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 61C220552F572409003846E3 /* FlowLayout */; };
 		61FF995C2F77FAB8002B24F3 /* vladukhaAlerts in Frameworks */ = {isa = PBXBuildFile; productRef = 61FF995B2F77FAB8002B24F3 /* vladukhaAlerts */; };
@@ -80,6 +82,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C220562F572409003846E3 /* FlowLayout in Frameworks */,
+				61A248FF2F841B0C00141E19 /* LogService in Frameworks */,
+				61A247C62F840B8A00141E19 /* LogService in Frameworks */,
 				61FF995C2F77FAB8002B24F3 /* vladukhaAlerts in Frameworks */,
 				61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */,
 			);
@@ -112,6 +116,7 @@
 				61399C7E2F412241008A0F49 /* RoutkaUITests */,
 				61399C632F41223F008A0F49 /* Products */,
 				6122F42B2F431E3100E20474 /* Routka.icon */,
+				61A2456B2F83190700141E19 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,6 +128,13 @@
 				61399C7B2F412241008A0F49 /* RoutkaUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		61A2456B2F83190700141E19 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,6 +161,8 @@
 				61BF8F1B2F51DD78000808F6 /* SimpleRouter */,
 				61C220552F572409003846E3 /* FlowLayout */,
 				61FF995B2F77FAB8002B24F3 /* vladukhaAlerts */,
+				61A247C52F840B8A00141E19 /* LogService */,
+				61A248FE2F841B0C00141E19 /* LogService */,
 			);
 			productName = DuckRunner;
 			productReference = 61399C622F41223F008A0F49 /* Routka.app */;
@@ -237,6 +251,7 @@
 				61BF8F1A2F51DD78000808F6 /* XCRemoteSwiftPackageReference "SimpleRouter" */,
 				61C220542F572409003846E3 /* XCRemoteSwiftPackageReference "FlowLayout" */,
 				61FF995A2F77FAB8002B24F3 /* XCRemoteSwiftPackageReference "vladukhaAlerts" */,
+				61A248FD2F841B0C00141E19 /* XCRemoteSwiftPackageReference "LogService" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 61399C632F41223F008A0F49 /* Products */;
@@ -646,6 +661,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		61A248FD2F841B0C00141E19 /* XCRemoteSwiftPackageReference "LogService" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Routka/LogService";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		61BF8F1A2F51DD78000808F6 /* XCRemoteSwiftPackageReference "SimpleRouter" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vladukhaDog/SimpleRouter";
@@ -673,6 +696,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		61A247C52F840B8A00141E19 /* LogService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogService;
+		};
+		61A248FE2F841B0C00141E19 /* LogService */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 61A248FD2F841B0C00141E19 /* XCRemoteSwiftPackageReference "LogService" */;
+			productName = LogService;
+		};
 		61BF8F1B2F51DD78000808F6 /* SimpleRouter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 61BF8F1A2F51DD78000808F6 /* XCRemoteSwiftPackageReference "SimpleRouter" */;

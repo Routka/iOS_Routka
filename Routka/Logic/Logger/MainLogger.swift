@@ -19,7 +19,6 @@ public final actor MainLogger {
     
     private let category: String
     private let logger: Logger
-    
     struct LoggerResponse: Codable {
         let id: String
     }
@@ -38,7 +37,8 @@ public final actor MainLogger {
                          line: UInt  = #line) {
         let date = Date()
         Task.detached { [weak self] in
-            await self?.logAsync(action, message: message, date: date, type, silent: silent, function: function, file: file, line: line)
+            guard let self else { return }
+            await self.logAsync(action, message: message, date: date, type, silent: silent, function: function, file: file, line: line)
         }
     }
     
@@ -53,6 +53,12 @@ public final actor MainLogger {
         
         let fileName = URL(string: "\(file)")?.lastPathComponent.replacingOccurrences(of: ".swift", with: "")
         
-        self.logger.log("\(action) \(message ?? "-", privacy: .public)\nfile: \(fileName ?? ""), function: \(function), line: \(line)")
+        self.logger.log(">\(action) \n>>\(message ?? "-", privacy: .public)\n>>>file: \(fileName ?? ""), function: \(function), line: \(line)")
+        await LogService.shared.registerLog(action: action,
+                                            message: message,
+                                            type: type.rawValue,
+                                            creationDate: date,
+                                            category: self.category,
+                                            source: "file: \(fileName ?? ""), function: \(function), line: \(line)")
     }
 }

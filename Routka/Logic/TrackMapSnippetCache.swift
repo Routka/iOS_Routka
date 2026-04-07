@@ -9,6 +9,8 @@ import Foundation
 import UIKit
 
 
+nonisolated let trackMapSnippetCacheLogger = MainLogger("TrackMapSnippetCache")
+
 
 protocol CacheFileManagerProtocol: Actor {
     func fileExists(atPath path: String) -> Bool
@@ -26,6 +28,7 @@ final actor CacheFileManager: CacheFileManagerProtocol {
 
     init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
+        cacheFileManagerLogger.log("Initialized", .info)
     }
 
     func fileExists(atPath path: String) -> Bool {
@@ -60,7 +63,13 @@ final actor CacheFileManager: CacheFileManagerProtocol {
     }
 
     func removeItem(atPath path: String) {
-        try? fileManager.removeItem(atPath: path)
+        do {
+            try fileManager.removeItem(atPath: path)
+        } catch {
+            cacheFileManagerLogger.log("Failed to remove cache file",
+                                       message: "at \(path): \(error)",
+                                       .error)
+        }
     }
 
     func fileNames(atPath path: String, containing substring: String) -> [String] {
@@ -83,6 +92,9 @@ final actor CacheFileManager: CacheFileManagerProtocol {
         for file in allFiles {
             removeItem(atPath: (NSTemporaryDirectory() as NSString).appendingPathComponent(file))
         }
+        cacheFileManagerLogger.log("Removed all cache files",
+                                   message: "count: \(allFiles.count)",
+                                   .info)
     }
 }
 
@@ -99,6 +111,7 @@ actor TrackMapSnippetCache: TrackMapSnippetCacheProtocol {
     
     init(fileManager: any CacheFileManagerProtocol) {
         self.fileManager = fileManager
+        trackMapSnippetCacheLogger.log("Initialized", .info)
     }
     
     private func path(for trackID: String, size: CGSize) -> String {
@@ -106,32 +119,55 @@ actor TrackMapSnippetCache: TrackMapSnippetCacheProtocol {
     }
     
     func invalidateCache(for trackID: String) async {
-        for image in await fileManager.fileNames(atPath: NSTemporaryDirectory(), containing: "trackmapcache-\(trackID)") {
+        let images = await fileManager.fileNames(atPath: NSTemporaryDirectory(), containing: "trackmapcache-\(trackID)")
+        for image in images {
             await fileManager.removeItem(atPath: (NSTemporaryDirectory() as NSString).appendingPathComponent(image))
         }
+        trackMapSnippetCacheLogger.log("Invalidated cache",
+                                       message: "trackID: \(trackID), removed: \(images.count)",
+                                       .info)
     }
     
     func getSnippet(for track: Track, size: CGSize) async -> UIImage? {
         let trackID = track.id
         let filePath = path(for: trackID, size: size)
         guard await fileManager.fileExists(atPath: filePath) else {
+            trackMapSnippetCacheLogger.log("Cache miss",
+                                           message: "trackID: \(trackID), size: \(Int(size.width))x\(Int(size.height))",
+                                           .warning,
+                                           silent: true)
             return nil
         }
         guard let data = await fileManager.contents(atPath: filePath) else {
+            trackMapSnippetCacheLogger.log("Cache file unreadable",
+                                           message: "trackID: \(trackID), path: \(filePath)",
+                                           .warning)
             return nil
         }
+        trackMapSnippetCacheLogger.log("Cache hit",
+                                       message: "trackID: \(trackID), size: \(Int(size.width))x\(Int(size.height))",
+                                       .info,
+                                       silent: true)
         return UIImage(data: data)
     }
     
     func cacheSnippet(_ snippet: UIImage, for track: Track, size: CGSize) async {
         let trackID = track.id
         let filePath = path(for: trackID, size: size)
-        guard let data = snippet.pngData() else { return }
+        guard let data = snippet.pngData() else {
+            trackMapSnippetCacheLogger.log("Failed encoding cache snippet",
+                                           message: "trackID: \(trackID)",
+                                           .error)
+            return
+        }
         await fileManager.createFile(atPath: filePath, contents: data, attributes: [.atomic])
+        trackMapSnippetCacheLogger.log("Cached snippet",
+                                       message: "trackID: \(trackID), size: \(Int(size.width))x\(Int(size.height))",
+                                       .info)
     }
     
     func removeAllCacheFiles() async {
         await fileManager.removeAllTrackMapCacheFiles()
+        trackMapSnippetCacheLogger.log("Requested full cache cleanup", .info)
     }
 }
-

@@ -8,6 +8,8 @@
 import Foundation
 import SwiftUI
 
+let trackFileServiceLogger = MainLogger("TrackFileService")
+
 enum TrackFileServiceError: Error {
     case invalidFile
 }
@@ -29,6 +31,7 @@ final class TrackFileService: TrackFileServiceProtocol {
     
     init(trackStorage: any TrackStorageProtocol) {
         self.trackStorage = trackStorage
+        trackFileServiceLogger.log("Initialized", .info)
     }
     
     var isImporterPresented = false
@@ -37,20 +40,31 @@ final class TrackFileService: TrackFileServiceProtocol {
     
     func showImporter() {
         self.isImporterPresented = true
+        trackFileServiceLogger.log("Presented file importer", .info)
     }
     
     @discardableResult
     func importFromFile(url: URL) async throws -> Track {
-        guard url.pathExtension.lowercased() == "routka" else { throw TrackFileServiceError.invalidFile}
+        trackFileServiceLogger.log("Started importing track", message: "url: \(url.lastPathComponent)", .info)
+        guard url.pathExtension.lowercased() == "routka" else {
+            trackFileServiceLogger.log("Rejected file import",
+                                       message: "Unsupported extension for \(url.lastPathComponent)",
+                                       .warning)
+            throw TrackFileServiceError.invalidFile
+        }
         do {
             let data = try Data(contentsOf: url)
             var track = try JSONDecoder().decode(Track.self, from: data)
             track.trackType = .import // override so it is always considered an import
             try await trackStorage?.addTrack(track)
+            trackFileServiceLogger.log("Imported track",
+                                       message: "id: \(track.id), file: \(url.lastPathComponent)",
+                                       .info)
             return track
         } catch {
-            print("Failed to import .routka file: \(error)")
-            // TODO: Record error to metric
+            trackFileServiceLogger.log("Failed importing track",
+                                       message: "file: \(url.lastPathComponent), error: \(error.localizedDescription)",
+                                       .error)
             throw error
         }
     }
@@ -59,6 +73,13 @@ final class TrackFileService: TrackFileServiceProtocol {
         if let url = self.exportTrackToFile(track: track) {
             self.isExporterPresented = true
             self.fileToExport = url
+            trackFileServiceLogger.log("Prepared track export",
+                                       message: "id: \(track.id), file: \(url.lastPathComponent)",
+                                       .info)
+        } else {
+            trackFileServiceLogger.log("Failed preparing track export",
+                                       message: "id: \(track.id)",
+                                       .error)
         }
     }
     
@@ -70,9 +91,14 @@ final class TrackFileService: TrackFileServiceProtocol {
             let tempDirectory = FileManager.default.temporaryDirectory
             let fileURL = tempDirectory.appendingPathComponent(filename)
             try data.write(to: fileURL, options: .atomic)
+            trackFileServiceLogger.log("Created export file",
+                                       message: "id: \(track.id), file: \(filename)",
+                                       .info)
             return fileURL
         } catch {
-            print("Failed to export .routka file: \(error)")
+            trackFileServiceLogger.log("Failed exporting track",
+                                       message: "id: \(track.id), error: \(error.localizedDescription)",
+                                       .error)
             return nil
         }
     }

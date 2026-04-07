@@ -9,6 +9,8 @@ import CoreData
 import os
 import Combine
 
+let measuredTrackRepositoryLogger = MainLogger("MeasuredTrackRepository")
+
 final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
     /// Publishes storage actions (creation, deletion, update) to notify observers of changes.
     var actionPublisher: PassthroughSubject<MeasuredTrackStorageAction, Never> = .init()
@@ -21,6 +23,7 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
     /// Initializes the repository with a Core Data container.
     init() {
         self.container = publicContainer
+        measuredTrackRepositoryLogger.log("Initialized", .info)
     }
     
     /// The NSPersistentContainer managing Core Data storage.
@@ -34,47 +37,72 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
     }()
 
     func getMeasuredTracks(limit: Int?) async -> [MeasuredTrack] {
-        let context = self.backgroundContext
-        return await withCheckedContinuation { [context] continuation in
+        let context: NSManagedObjectContext = self.backgroundContext
+        return await withCheckedContinuation { continuation in
             context.performAndWait {
                 
                 let request: NSFetchRequest<MeasuredTrackDTO> = MeasuredTrackDTO.fetchRequest()
                 if let limit {
                     request.fetchLimit = limit
                 }
-                let measuredTrackDTOs = (try? context.fetch(request)) ?? []
-                
-                let measuredTracks: [MeasuredTrack] = measuredTrackDTOs
-                    .compactMap { dto in
-                        let track = MeasuredTrack(dto)
-                        guard dto.track != nil else {
-                            context.delete(dto)
-                            self.sendAction(.deleted(track))
-                            return nil
+                do {
+                    let measuredTrackDTOs = try context.fetch(request)
+
+                    let measuredTracks: [MeasuredTrack] = measuredTrackDTOs
+                        .compactMap { dto in
+                            let track = MeasuredTrack(dto)
+                            guard dto.track != nil else {
+                                context.delete(dto)
+                                self.sendAction(.deleted(track))
+                                measuredTrackRepositoryLogger.log("Removed orphaned measured track",
+                                                                  message: "id: \(track.id)",
+                                                                  .warning)
+                                return nil
+                            }
+                            return track
                         }
-                        return track
+                    if context.hasChanges {
+                        do {
+                            try context.save()
+                        } catch {
+                            measuredTrackRepositoryLogger.log("Failed deleting orphaned measured tracks",
+                                                              message: error.localizedDescription,
+                                                              .error)
+                        }
                     }
-                if context.hasChanges {
-                    do { try context.save() } catch {
-                        trackRepositoryLogger.log("Failed deleting orphaned measured tracks", message: error.localizedDescription, .error)
-                    }
+                    measuredTrackRepositoryLogger.log("Fetched measured tracks",
+                                                      message: "count: \(measuredTracks.count), limit: \(limit?.description ?? "none")",
+                                                      .info)
+                    continuation.resume(returning: measuredTracks)
+                } catch {
+                    measuredTrackRepositoryLogger.log("Failed fetching measured tracks",
+                                                      message: error.localizedDescription,
+                                                      .error)
+                    continuation.resume(returning: [])
                 }
-                
-                continuation.resume(returning: measuredTracks)
             }
         }
     }
     
     func addMeasuredTrack(_ track: MeasuredTrack) async {
-        let context = self.backgroundContext
-        return await withCheckedContinuation { [context] continuation in
+        let context: NSManagedObjectContext = self.backgroundContext
+        return await withCheckedContinuation { continuation in
             context.performAndWait {
              
                 // Creating the record
                 let _ = MeasuredTrackDTO(context: context, track)
                 if context.hasChanges {
-                    try? context.save()
-                    self.sendAction(.created(track))
+                    do {
+                        try context.save()
+                        self.sendAction(.created(track))
+                        measuredTrackRepositoryLogger.log("Stored measured track",
+                                                          message: "id: \(track.id), name: \(track.measurement.name)",
+                                                          .info)
+                    } catch {
+                        measuredTrackRepositoryLogger.log("Failed saving measured track",
+                                                          message: error.localizedDescription,
+                                                          .error)
+                    }
                 }
                 continuation.resume()
             }
@@ -82,8 +110,8 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
     }
     
     func deleteMeasuredTrack(_ track: MeasuredTrack) async {
-        let context = self.backgroundContext
-        await withCheckedContinuation { [context, track] continuation in
+        let context: NSManagedObjectContext = self.backgroundContext
+        await withCheckedContinuation { continuation in
             context.performAndWait {
                 let request = MeasuredTrackDTO.fetchRequest()
                 request.predicate = NSPredicate(format: "id == %@", track.id)
@@ -93,10 +121,19 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
                         if context.hasChanges {
                             try context.save()
                             self.sendAction(.deleted(track))
+                            measuredTrackRepositoryLogger.log("Deleted measured track",
+                                                              message: "id: \(track.id)",
+                                                              .info)
                         }
+                    } else {
+                        measuredTrackRepositoryLogger.log("Delete skipped",
+                                                          message: "No measured track found for id \(track.id)",
+                                                          .warning)
                     }
                 } catch {
-                    trackRepositoryLogger.log("Failed deleting the track", message: error.localizedDescription, .error)
+                    measuredTrackRepositoryLogger.log("Failed deleting measured track",
+                                                      message: error.localizedDescription,
+                                                      .error)
                 }
                 continuation.resume()
             }
@@ -104,8 +141,8 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
     }
     
     func getShortestMeasuredTrack(named name: String) async -> MeasuredTrack? {
-        let context = self.backgroundContext
-        return await withCheckedContinuation { [context] continuation in
+        let context: NSManagedObjectContext = self.backgroundContext
+        return await withCheckedContinuation { continuation in
             context.performAndWait {
                 let request: NSFetchRequest<MeasuredTrackDTO> = MeasuredTrackDTO.fetchRequest()
                 request.predicate = NSPredicate(format: "name == %@", name)
@@ -125,7 +162,13 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
                         tracks.append(model)
                     }
                     if didDelete, context.hasChanges {
-                        try? context.save()
+                        do {
+                            try context.save()
+                        } catch {
+                            measuredTrackRepositoryLogger.log("Failed saving measured track cleanup",
+                                                              message: error.localizedDescription,
+                                                              .error)
+                        }
                     }
                     // Compute shortest by duration
                     let shortest = tracks.min(by: { lhs, rhs in
@@ -133,9 +176,14 @@ final class MeasuredTrackRepository: MeasuredTrackStorageProtocol {
                         let rd = (rhs.track.stopDate ?? rhs.track.startDate).timeIntervalSince(rhs.track.startDate)
                         return ld < rd
                     })
+                    measuredTrackRepositoryLogger.log("Resolved shortest measured track",
+                                                      message: "name: \(name), found: \(shortest != nil), count: \(tracks.count)",
+                                                      .info)
                     continuation.resume(returning: shortest)
                 } catch {
-                    trackRepositoryLogger.log("Failed fetching measured tracks by name", message: error.localizedDescription, .error)
+                    measuredTrackRepositoryLogger.log("Failed fetching measured tracks by name",
+                                                      message: error.localizedDescription,
+                                                      .error)
                     continuation.resume(returning: nil)
                 }
             }
