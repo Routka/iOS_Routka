@@ -60,6 +60,7 @@ struct LocationAccessControlView: View {
             }
         }
         .buttonStyle(.glassProminent)
+        .accessibilityIdentifier("ProvideLocationButton")
     }
     
     private var restrictedAccess: some View {

@@ -55,6 +55,9 @@
             ReferencedContainer = "container:Routka.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <DeviceAppData
+         resolvedPath = "../../MarketingScreenshotsRun/RoutkaMarketing.xcappdata">
+      </DeviceAppData>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

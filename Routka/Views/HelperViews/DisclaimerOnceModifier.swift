@@ -54,7 +54,7 @@ struct DisclaimerOnceModifier: ViewModifier {
         Array(repeating: Color.clear, count: 2)
     }
     private var topMaskColors: [Color] {
-        Array(repeating: Color.black, count: 15) +
+        Array(repeating: Color.black, count: 19) +
         Array(repeating: Color.clear, count: 1)
     }
 
@@ -172,6 +172,7 @@ struct DisclaimerOnceModifier: ViewModifier {
         }
         .disabled(!isButtonEnabled)
         .opacity(isButtonEnabled ? 1 : 0.6)
+        .accessibilityIdentifier("DismissDisclaimerButton")
         
     }
 }

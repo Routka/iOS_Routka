@@ -20,6 +20,16 @@
   },
   "testTargets" : [
     {
+      "deviceAppDataReference" : {
+        "resolvedPath" : "..\/..\/MarketingScreenshotsRun\/RoutkaMarketing.xcappdata"
+      },
+      "skippedTests" : [
+        "RoutkaMarketingScreenshotUITests\/test_TrackEdit()",
+        "RoutkaMarketingScreenshotUITests\/test_generateMeasurementRecordedScreen()",
+        "RoutkaMarketingScreenshotUITests\/test_generatePresetSelector()",
+        "RoutkaMarketingScreenshotUITests\/test_generateRegularTrackRecordingScreen()",
+        "RoutkaMarketingScreenshotUITests\/test_journal()"
+      ],
       "target" : {
         "containerPath" : "container:Routka.xcodeproj",
         "identifier" : "61E99E202F85B1140087320E",

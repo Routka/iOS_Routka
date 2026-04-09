@@ -30,7 +30,11 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
         XCTAssertFalse(track.isEmpty)
 
         let app = XCUIApplication()
+        
+        app.launchArguments.append("UITestingDarkModeEnabled")
         app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
+        app.allowLocation()
         
         let startingPoint = track.removeFirst()
         XCUIDevice.goTo(startingPoint)
@@ -60,7 +64,10 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
         XCTAssertFalse(track.isEmpty)
 
         let app = XCUIApplication()
+        app.launchArguments.append("UITestingDarkModeEnabled")
         app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
+        app.allowLocation()
         
         let startingPoint = track.removeFirst()
         XCUIDevice.goTo(startingPoint)
@@ -94,10 +101,11 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
                 latitude: point.position.latitude,
                 longitude: point.position.longitude
             )
-            if startingLocation.distance(from: currentLocation) >= halfMileInMeters {
+            if startingLocation.distance(from: currentLocation) > halfMileInMeters {
                 break
             }
         }
+        sleep(4)
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "\(localeIdentifier).3 Measurement done"
@@ -108,7 +116,19 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
     @MainActor
     func test_generatePresetSelector() async throws {
         let app = XCUIApplication()
+                app.launchArguments.append("UITestingDarkModeEnabled")
         app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
+        app.allowLocation()
+        
+        let dismissDisclaimer = app.buttons["DismissDisclaimerButton"]
+        if dismissDisclaimer.waitForExistence(timeout: 2) {
+            
+            let predicate = NSPredicate(format: "isEnabled == true")
+            let expectation = XCTNSPredicateExpectation(predicate: predicate, object: dismissDisclaimer)
+            await fulfillment(of: [expectation], timeout: 8)
+            dismissDisclaimer.tap()
+        }
 
         let selectorButton = app.buttons["measuredTracksSelector"]
         XCTAssertTrue(selectorButton.waitForExistence(timeout: 5))
@@ -125,7 +145,9 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
     @MainActor
     func test_journal() async throws {
         let app = XCUIApplication()
+        app.launchArguments.append("UITestingDarkModeEnabled")
         app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
 
         let tracksTab = app.tabBars.firstMatch.buttons.allElementsBoundByIndex[1]
         XCTAssertTrue(tracksTab.waitForExistence(timeout: 5))
@@ -141,7 +163,9 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
     @MainActor
     func test_trackStats() async throws {
         let app = XCUIApplication()
+        app.launchArguments.append("UITestingDarkModeEnabled")
         app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
 
         let tracksTab = app.tabBars.firstMatch.buttons.allElementsBoundByIndex[1]
         XCTAssertTrue(tracksTab.waitForExistence(timeout: 5))
@@ -158,13 +182,54 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
         XCTAssertTrue(replayHint.waitForExistence(timeout: 5))
 
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
-        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
-        start.press(forDuration: 2, thenDragTo: end)
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        start.press(forDuration: 1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
         
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "\(localeIdentifier).5 Track stats"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+    
+    @MainActor
+    func test_TrackEdit() async throws {
+        let app = XCUIApplication()
+        app.launchArguments.append("UITestingDarkModeEnabled")
+        app.launch()
+        await self.dismissDisclaimerIfPresent(onApp: app)
+
+        let tracksTab = app.tabBars.firstMatch.buttons.allElementsBoundByIndex[1]
+        XCTAssertTrue(tracksTab.waitForExistence(timeout: 5))
+        sleep(2)
+        tracksTab.tap()
+
+        let firstHistoryTrack = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "historyTrackButton_")
+        ).firstMatch
+        XCTAssertTrue(firstHistoryTrack.waitForExistence(timeout: 5))
+        firstHistoryTrack.tap()
+        
+        app.swipeUp()
+        app.buttons["editTrackButton"].tap()
+        let playButton = app.buttons["startTag"]
+        let stopButton = app.buttons["stopTag"]
+        let appFrame = app.frame
+        let startPlay = app.coordinate(withNormalizedOffset: CGVector(dx: playButton.frame.midX/appFrame.width,
+                                                                      dy: playButton.frame.midY/appFrame.height))
+        let endPlay = app.coordinate(withNormalizedOffset: CGVector(dx: (playButton.frame.midX/appFrame.width) + 0.15,
+                                                                    dy: playButton.frame.midY/appFrame.height))
+        startPlay.press(forDuration: 0.2, thenDragTo: endPlay, withVelocity: .slow, thenHoldForDuration: 0.1)
+        
+        let startEnd = app.coordinate(withNormalizedOffset: CGVector(dx: stopButton.frame.midX/appFrame.width,
+                                                                      dy: stopButton.frame.midY/appFrame.height))
+        let endEnd = app.coordinate(withNormalizedOffset: CGVector(dx: (stopButton.frame.midX/appFrame.width) - 0.15,
+                                                                    dy: stopButton.frame.midY/appFrame.height))
+        startEnd.press(forDuration: 0.2, thenDragTo: endEnd, withVelocity: .slow, thenHoldForDuration: 0.1)
+        
+                let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                attachment.name = "\(localeIdentifier).6 Track edit"
+                attachment.lifetime = .keepAlways
+                add(attachment)
     }
     
     @MainActor
@@ -187,5 +252,39 @@ final class RoutkaMarketingScreenshotUITests: XCTestCase {
         return Locale(identifier: preferredLanguage).language.languageCode?.identifier ?? preferredLanguage
     }
 
+}
+
+extension XCTestCase {
+    @MainActor
+    func dismissDisclaimerIfPresent(onApp app : XCUIApplication) async {
+        
+        let dismissDisclaimer = app.buttons["DismissDisclaimerButton"]
+        if dismissDisclaimer.waitForExistence(timeout: 2) {
+            
+            let predicate = NSPredicate(format: "isEnabled == true")
+            let expectation = XCTNSPredicateExpectation(predicate: predicate, object: dismissDisclaimer)
+            await self.fulfillment(of: [expectation], timeout: 8)
+            dismissDisclaimer.tap()
+        }
+    }
+}
+
+fileprivate extension XCUIApplication {
+    func allowLocation() {
+        let app = self
+        let provideLocBtn = app.buttons["ProvideLocationButton"]
+        if provideLocBtn.waitForExistence(timeout: 2) {
+            provideLocBtn.tap()
+        } else {
+            return
+        }
+        let springboardApp = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        if springboardApp.buttons.allElementsBoundByIndex.count > 1 {
+            springboardApp.buttons.element(boundBy: 1).tap()
+        }
+//        springboardApp.buttons["Allow While Using App"].firstMatch.tap()
+//        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+//        start.press(forDuration: 0.5)
+    }
 }
 

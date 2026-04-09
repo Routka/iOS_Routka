@@ -14,7 +14,7 @@ final class LogService {
     private var cancellables: Set<AnyCancellable> = []
     public static let shared: LogService = .init()
     private let logRepo: any LogStorageProtocol = LogStorage.shared
-    private let logSender = LogServiceClient(serverURL: URL(string: "http://routka.com")!)
+    private let logSender = LogServiceClient(serverURL: URL(string: "https://routka.com")!)
     
     private let version: String
     private let build: String

@@ -185,6 +185,7 @@ struct TrackDetailView: View {
                 } label: {
                     Label("Edit track", systemImage: "timeline.selection")
                 }
+                .accessibilityIdentifier("editTrackButton")
             }
         }
     }

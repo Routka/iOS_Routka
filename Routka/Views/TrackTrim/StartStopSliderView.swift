@@ -34,6 +34,8 @@ struct StartStopSliderView: View {
                     .offset(x: xOffset(for: sanitizedStartIndex, width: availableWidth) - metrics.handleDiameter / 2)
                     .gesture(handleDragGesture(kind: .start, width: availableWidth))
                     .accessibilityLabel("Start point of a track")
+                    .accessibilityIdentifier("startTag")
+                    .accessibilityAddTraits(.isButton)
                     .accessibilityValue("\(sanitizedStartIndex)")
                     .accessibilityAdjustableAction { direction in
                         adjustHandle(.start, direction: direction)
@@ -43,6 +45,8 @@ struct StartStopSliderView: View {
                     .offset(x: xOffset(for: sanitizedStopIndex, width: availableWidth) - metrics.handleDiameter / 2)
                     .gesture(handleDragGesture(kind: .stop, width: availableWidth))
                     .accessibilityLabel("Stop point of a track")
+                    .accessibilityIdentifier("stopTag")
+                    .accessibilityAddTraits(.isButton)
                     .accessibilityValue("\(sanitizedStopIndex)")
                     .accessibilityAdjustableAction { direction in
                         adjustHandle(.stop, direction: direction)

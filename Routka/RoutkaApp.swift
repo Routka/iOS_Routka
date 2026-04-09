@@ -19,6 +19,8 @@ struct RoutkaApp: App {
     private let dependencies: DependencyManager
     private let baseMapViewModel: BaseMapViewModel
     private let tracksTabViewModel: TracksTabViewModel
+    private let preferredColorScheme: ColorScheme?
+
     init() {
         self.dependencies = .production(tabs: [
             "Tracks"
@@ -26,6 +28,7 @@ struct RoutkaApp: App {
         self.tabRouter = dependencies.tabRouter
         self.baseMapViewModel = BaseMapViewModel(dependencies: dependencies)
         self.tracksTabViewModel = .init(dependencies: dependencies)
+        self.preferredColorScheme = ProcessInfo.processInfo.arguments.contains("UITestingDarkModeEnabled") ? .dark : nil
     }
     
     /// The main scene of the application providing the app's user interface structure.
@@ -73,6 +76,7 @@ struct RoutkaApp: App {
             .fileManager(managedBy: dependencies)
             .alertable(alertController,
                        alignment: .top)
+            .preferredColorScheme(preferredColorScheme)
         }
     }
 }
