@@ -24,7 +24,8 @@ struct MeasuredTrackCellView: View {
         HStack(spacing: 4) {
             Image(systemName: measured.measurement.image)
                 .foregroundStyle(Color.accentColor)
-            Text(measured.measurement.name)
+            Text(LocalizedStringKey(measured.measurement.name),
+                 tableName: "MeasurementPresets")
                 .font(.headline)
                 .foregroundStyle(Color.primary)
         }

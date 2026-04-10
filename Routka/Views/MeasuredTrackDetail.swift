@@ -70,8 +70,13 @@ struct MeasuredTrackDetailView: View {
             }
         }
         .defaultBackground()
-        .navigationTitle(measuredTrack.measurement.name)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle(
+            Text(
+                LocalizedStringKey(measuredTrack.measurement.name),
+                tableName: "MeasurementPresets"
+            )
+        )
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private var baseTrackInfo: some View {

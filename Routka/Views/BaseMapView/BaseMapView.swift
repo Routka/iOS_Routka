@@ -113,7 +113,8 @@ struct BaseMapView: View {
             if progress < 1 {
                 Text("Measuring")
             }
-            Text(measurement.name)
+            Text(LocalizedStringKey(measurement.name),
+                 tableName: "MeasurementPresets")
                 .bold()
             CircularProgressView(progress: progress)
                 .frame(width: 20)
