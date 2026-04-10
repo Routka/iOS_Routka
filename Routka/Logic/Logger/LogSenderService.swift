@@ -56,7 +56,9 @@ final class LogService {
         self.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Unknown identifier, is device unlocked?"
         self.sessionID = UUID().uuidString
         self.setupLifecycleListeners()
+        #if PRODUCTION
         self.startCycle()
+        #endif
     }
     
     private func setupLifecycleListeners() {
