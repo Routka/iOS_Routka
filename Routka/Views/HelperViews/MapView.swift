@@ -87,13 +87,16 @@ struct MapView<Content: MapContent>: View {
         self._vm = .init(initialValue: .init(mode: mode, dependencies: dependencies))
     }
     
+    @Namespace var mapScope
     
     var body: some View {
-        VStack {
+        ZStack(alignment: .topTrailing) {
             Map(position: $vm.mapPosition,
                 bounds: vm.bounds,
-                interactionModes: vm.interactionModes,
+                interactionModes: .all,
+                scope: mapScope,
                 content: content)
+            .mapStyle(.standard(elevation: .realistic))
             .onMapCameraChange(frequency: .onEnd, {
                 self.vm.isMovingMap = false
             })
@@ -103,19 +106,22 @@ struct MapView<Content: MapContent>: View {
                     self.vm.isMovingMap = true
                 }
             }
-            .mapControls({
-                MapPitchToggle()
-                    .mapControlVisibility(.visible)
-                MapCompass()
-                    
-            })
-            .safeAreaInset(edge: .top) {
-                followButton
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.horizontal)
-                    .padding(.top)
+            .mapControls {
+                // SPECIFICALLY EMPTY CONTROLS
+                // on 26.2 compass behaves weirdly and stops rotating
             }
+            VStack {
+                MapPitchToggle(scope: mapScope)
+                    .mapControlVisibility(.visible)
+                    .glassEffect(.regular.interactive(), in: Circle())
+                MapCompass(scope: mapScope)
+                    .mapControlVisibility(.visible)
+                followButton
+            }
+            .padding()
+            
         }
+        .mapScope(mapScope)
     }
     
     @ViewBuilder
@@ -134,7 +140,7 @@ struct MapView<Content: MapContent>: View {
                     .scaledToFit()
                 
                     .padding()
-                    .glassEffect(.regular, in: Circle())
+                    .glassEffect(.regular.interactive(), in: Circle())
                     .frame(width: 45)
             }
             .animation(.bouncy, value: tracking)
