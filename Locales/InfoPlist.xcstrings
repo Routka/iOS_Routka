@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Routka"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turning on location access will allow the app to record and store locally your driving activity for you to review later."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступ к геопозиции даст возможность приложению записывать и хранить на устройстве ваши поездки, чтобы вы могли просматривать их в будущем."
+          }
+        }
+      }
+    },
+    "track file" : {
+      "shouldTranslate" : false
+    },
+    "Track file" : {
+      "shouldTranslate" : false
+    }
+  },
+  "version" : "1.1"
+}

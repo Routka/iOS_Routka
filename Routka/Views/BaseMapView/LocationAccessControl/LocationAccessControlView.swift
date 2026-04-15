@@ -38,9 +38,10 @@ struct LocationAccessControlView: View {
     }
     
     private func title(_ text: String) -> some View {
-        Text(text)
-            .font(.headline)
-            .multilineTextAlignment(.leading)
+        Text(LocalizedStringKey(text),
+             tableName: "LocationAccess")
+        .font(.headline)
+        .multilineTextAlignment(.leading)
     }
     
     private func button(_ text: String,
@@ -53,10 +54,11 @@ struct LocationAccessControlView: View {
                 Image(systemName: icon)
                     .font(.title2)
                 
-                Text(text)
-                    .bold()
-                    .underline()
-                    .font(.title3)
+                Text(LocalizedStringKey(text),
+                     tableName: "LocationAccess")
+                .bold()
+                .underline()
+                .font(.title3)
             }
         }
         .buttonStyle(.glassProminent)

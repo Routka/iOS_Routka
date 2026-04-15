@@ -14,7 +14,7 @@ final class LogService {
     private var cancellables: Set<AnyCancellable> = []
     public static let shared: LogService = .init()
     private let logRepo: any LogStorageProtocol = LogStorage.shared
-    private let logSender = LogServiceClient(serverURL: URL(string: "https://routka.com")!)
+    private let logSender = LogServiceClient(serverURL: URL(string: "https://api.routka.com")!)
     
     private let version: String
     private let build: String
@@ -56,9 +56,9 @@ final class LogService {
         self.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Unknown identifier, is device unlocked?"
         self.sessionID = UUID().uuidString
         self.setupLifecycleListeners()
-        #if PRODUCTION
+//        #if PRODUCTION
         self.startCycle()
-        #endif
+//        #endif
     }
     
     private func setupLifecycleListeners() {
