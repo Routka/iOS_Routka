@@ -62,8 +62,9 @@ struct TrackHistoryView: View {
                     if case .list(let array) = vm.state {
                         ForEach(array, id: \.id) { track in
                             Button {
-                                dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
-                                    .trackDetail(track: track, dependencies: dependencies))
+#warning("Fix navigation")
+//                                dependencies.routers[dependencies.tabRouter.selectedTab]?.push(
+//                                    .trackDetail(track: track, dependencies: dependencies))
                             } label: {
                                 TrackHistoryCellView(track: track,
                                                      unit: UnitSpeed.byName(speedUnit),

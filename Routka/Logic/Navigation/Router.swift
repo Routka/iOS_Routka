@@ -12,18 +12,18 @@ import SimpleRouter
 let routerLogger = MainLogger("Router")
 
 /// Class to control navigation
-@MainActor
-final class Router: RouterProtocol {
-    @Published var path: [AnyRoute] = []
 
-    func push<R: Route>(_ route: R) {
+public final class Router: RouterProtocol {
+    @Published public var path: [AnyRoute] = []
+
+    public func push<R: Route>(_ route: R) {
         path.append(AnyRoute(route))
         routerLogger.log("Pushed route",
                          message: "route: \(String(describing: type(of: route))), depth: \(path.count)",
                          .info)
     }
 
-    func pop() {
+    public func pop() {
         guard path.isEmpty == false else {
             routerLogger.log("Pop ignored", message: "Navigation stack is already empty", .warning)
             return
@@ -32,7 +32,7 @@ final class Router: RouterProtocol {
         routerLogger.log("Popped route", message: "depth: \(path.count)", .info)
     }
 
-    func popToRoot() {
+    public func popToRoot() {
         guard path.isEmpty == false else {
             routerLogger.log("Pop to root ignored", message: "Navigation stack is already empty", .warning)
             return

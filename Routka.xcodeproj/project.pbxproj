@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		6122F42C2F431E3100E20474 /* Routka.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6122F42B2F431E3100E20474 /* Routka.icon */; };
 		61561F4F2F85A784006129E5 /* MarketingScreenshots.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61561F4E2F85A784006129E5 /* MarketingScreenshots.xctestplan */; };
+		617387B92F965E8800B52405 /* NeedleFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 617387B82F965E8800B52405 /* NeedleFoundation */; };
+		617387BB2F965E8800B52405 /* NeedleFoundationTest in Frameworks */ = {isa = PBXBuildFile; productRef = 617387BA2F965E8800B52405 /* NeedleFoundationTest */; };
 		61A247C62F840B8A00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A247C52F840B8A00141E19 /* LogService */; };
 		61A248FF2F841B0C00141E19 /* LogService in Frameworks */ = {isa = PBXBuildFile; productRef = 61A248FE2F841B0C00141E19 /* LogService */; };
 		61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */ = {isa = PBXBuildFile; productRef = 61BF8F1B2F51DD78000808F6 /* SimpleRouter */; };
@@ -100,6 +102,7 @@
 				61A248FF2F841B0C00141E19 /* LogService in Frameworks */,
 				61A247C62F840B8A00141E19 /* LogService in Frameworks */,
 				61FF995C2F77FAB8002B24F3 /* vladukhaAlerts in Frameworks */,
+				617387B92F965E8800B52405 /* NeedleFoundation in Frameworks */,
 				61BF8F1C2F51DD78000808F6 /* SimpleRouter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,6 +111,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				617387BB2F965E8800B52405 /* NeedleFoundationTest in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +192,7 @@
 				61FF995B2F77FAB8002B24F3 /* vladukhaAlerts */,
 				61A247C52F840B8A00141E19 /* LogService */,
 				61A248FE2F841B0C00141E19 /* LogService */,
+				617387B82F965E8800B52405 /* NeedleFoundation */,
 			);
 			productName = DuckRunner;
 			productReference = 61399C622F41223F008A0F49 /* Routka.app */;
@@ -211,6 +216,7 @@
 			);
 			name = RoutkaTests;
 			packageProductDependencies = (
+				617387BA2F965E8800B52405 /* NeedleFoundationTest */,
 			);
 			productName = DuckRunnerTests;
 			productReference = 61399C712F412241008A0F49 /* RoutkaTests.xctest */;
@@ -304,6 +310,7 @@
 				61C220542F572409003846E3 /* XCRemoteSwiftPackageReference "FlowLayout" */,
 				61FF995A2F77FAB8002B24F3 /* XCRemoteSwiftPackageReference "vladukhaAlerts" */,
 				61A248FD2F841B0C00141E19 /* XCRemoteSwiftPackageReference "LogService" */,
+				617387B72F965E8800B52405 /* XCRemoteSwiftPackageReference "needle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 61399C632F41223F008A0F49 /* Products */;
@@ -795,6 +802,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		617387B72F965E8800B52405 /* XCRemoteSwiftPackageReference "needle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/uber/needle.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		61A248FD2F841B0C00141E19 /* XCRemoteSwiftPackageReference "LogService" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Routka/LogService";
@@ -830,6 +845,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		617387B82F965E8800B52405 /* NeedleFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 617387B72F965E8800B52405 /* XCRemoteSwiftPackageReference "needle" */;
+			productName = NeedleFoundation;
+		};
+		617387BA2F965E8800B52405 /* NeedleFoundationTest */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 617387B72F965E8800B52405 /* XCRemoteSwiftPackageReference "needle" */;
+			productName = NeedleFoundationTest;
+		};
 		61A247C52F840B8A00141E19 /* LogService */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LogService;

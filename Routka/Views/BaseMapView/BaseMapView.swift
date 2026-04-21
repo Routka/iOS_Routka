@@ -32,31 +32,33 @@ struct BaseMapView: View {
     /// The main interface for map display, overlays, and controls.
     var body: some View {
         let unitSpeed = UnitSpeed.byName(speedUnit)
-        MapView(mode: vm.mapMode, dependencies: dependencies) {
-            UserAnnotation()
-            if let replayTrack = vm.replayValidator?.track {
-                MapContents.replayTrack(replayTrack)
-            }
-            if let currentTrack = vm.trackRecordingService.currentTrack {
-                MapContents.liveTrack(currentTrack)
-            }
-            let checkPoints = vm.replayValidator?.checkpoints
-                .map({$0.value})
-            
-            ForEach(checkPoints ?? [], id: \.id) { checkpoint in
-                MapContents.checkPoint(checkpoint)
-            }
-            
-            if let startPoint = vm.replayValidator?.startReplayCheckpoint?.point,
-               vm.showStartPoint {
-                MapContents.startCheckPoint(startPoint)
-            }
-            
-            if let stopPoint = vm.replayValidator?.stopReplayCheckpoint?.point {
-                MapContents.stopCheckPoint(stopPoint)
-            }
-            
-        }
+        #warning("MapView is not implemented")
+        Text("")
+//        MapView(mode: vm.mapMode, dependencies: dependencies) {
+//            UserAnnotation()
+//            if let replayTrack = vm.replayValidator?.track {
+//                MapContents.replayTrack(replayTrack)
+//            }
+//            if let currentTrack = vm.trackRecordingService.currentTrack {
+//                MapContents.liveTrack(currentTrack)
+//            }
+//            let checkPoints = vm.replayValidator?.checkpoints
+//                .map({$0.value})
+//            
+//            ForEach(checkPoints ?? [], id: \.id) { checkpoint in
+//                MapContents.checkPoint(checkpoint)
+//            }
+//            
+//            if let startPoint = vm.replayValidator?.startReplayCheckpoint?.point,
+//               vm.showStartPoint {
+//                MapContents.startCheckPoint(startPoint)
+//            }
+//            
+//            if let stopPoint = vm.replayValidator?.stopReplayCheckpoint?.point {
+//                MapContents.stopCheckPoint(stopPoint)
+//            }
+//            
+//        }
         .overlay(alignment: .top) {
             if let currentSpeed = vm.currentSpeed {
                 SpeedometerView(currentSpeed, displayUnit: unitSpeed)

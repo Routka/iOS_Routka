@@ -54,7 +54,8 @@ private struct FileServiceViewWrapper: ViewModifier {
                     }
                     dependencies.tabRouter.selectedTab = "Tracks"
                     dependencies.routers[dependencies.tabRouter.selectedTab]?.popToRoot()
-                    dependencies.routers[dependencies.tabRouter.selectedTab]?.push(.trackDetail(track: track, dependencies: dependencies))
+                    #warning("Fix navigation")
+//                    dependencies.routers[dependencies.tabRouter.selectedTab]?.push(.trackDetail(track: track, dependencies: dependencies))
                 }
             }
             .fileImporter(
@@ -71,8 +72,9 @@ private struct FileServiceViewWrapper: ViewModifier {
                     Task {
                         do {
                             let importedTrack = try await service.importFromFile(url: url)
-                            dependencies.routers[dependencies.tabRouter.selectedTab]?
-                                .push(.trackDetail(track: importedTrack, dependencies: dependencies))
+#warning("Fix navigation")
+//                            dependencies.routers[dependencies.tabRouter.selectedTab]?
+//                                .push(.trackDetail(track: importedTrack, dependencies: dependencies))
                         } catch {
                             fileTransferUILogger.log("Importer failed",
                                                      message: "file: \(url.lastPathComponent), error: \(error.localizedDescription)",

@@ -103,10 +103,12 @@ struct TrackTrimView: View {
     }
     
     var body: some View {
-        MapView(mode: .free(vm.track), dependencies: dependencies) {
-            MapContents.fantomTrack(vm.track)
-            MapContents.speedTrack(vm.trimmedTrack)
-        }
+#warning("MapView is not implemented")
+        Text("")
+//        MapView(mode: .free(vm.track), dependencies: dependencies) {
+//            MapContents.fantomTrack(vm.track)
+//            MapContents.speedTrack(vm.trimmedTrack)
+//        }
             .overlay(alignment: .bottom) {
                 VStack {
                     if vm.track.points.first != vm.trimmedTrack.points.first ||
@@ -160,7 +162,8 @@ struct TrackTrimView: View {
                         let router = dependencies.routers[dependencies.tabRouter.selectedTab]
                         router?.popToRoot()
                         try? await Task.sleep(for: .seconds(0.5))
-                        router?.push(.trackDetail(track: NewTrack, dependencies: dependencies))
+#warning("Fix navigation")
+//                        router?.push(.trackDetail(track: NewTrack, dependencies: dependencies))
                     } catch {
                         print("Failed saving track", error)
                     }

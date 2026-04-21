@@ -8,6 +8,7 @@
 import SwiftUI
 import MapKit
 import Combine
+import NeedleFoundation
 
 enum MapViewMode: Equatable {
     case trackUser
@@ -30,14 +31,14 @@ final class MapViewModel {
     private var cancellables: Set<AnyCancellable> = []
     
     init(mode: MapViewMode,
-         dependencies: DependencyManager) {
+         locationService: any LocationServiceProtocol) {
         self.mode = mode
         switch mode {
         case .trackUser:
             self.mapPosition = .userLocation(followsHeading: true, fallback: .automatic)
             self.interactionModes = .all
             self.bounds = nil
-            dependencies.locationService
+            locationService
                 .location
                 .sink { newLocation in
                     self.receivedLocationUpdate(newLocation)
@@ -77,14 +78,13 @@ final class MapViewModel {
 }
 
 struct MapView<Content: MapContent>: View {
-    private let content: () -> Content
+    private let content: Content
     @State private var vm: MapViewModel
     
-    init(mode: MapViewMode,
-         dependencies: DependencyManager,
+    init(vm: MapViewModel,
          @MapContentBuilder content: @escaping () -> Content) {
-        self.content = content
-        self._vm = .init(initialValue: .init(mode: mode, dependencies: dependencies))
+        self.content = content()
+        self._vm = .init(initialValue: vm)
     }
     
     @Namespace var mapScope
@@ -95,7 +95,9 @@ struct MapView<Content: MapContent>: View {
                 bounds: vm.bounds,
                 interactionModes: .all,
                 scope: mapScope,
-                content: content)
+                content: {
+                content
+            })
             .mapStyle(.standard(elevation: .realistic))
             .onMapCameraChange(frequency: .onEnd, {
                 self.vm.isMovingMap = false
@@ -148,10 +150,11 @@ struct MapView<Content: MapContent>: View {
     }
 }
 
-#Preview {
-    MapView(mode: .trackUser, dependencies: .mock()) {
-        UserAnnotation()
-        MapContents.speedTrack(.filledTrack)
-        MapContents.fantomTrack(.filledTrack)
-    }
-}
+#warning("fix preview")
+//#Preview {
+//    MapView(mode: .trackUser, dependencies: .mock()) {
+//        UserAnnotation()
+//        MapContents.speedTrack(.filledTrack)
+//        MapContents.fantomTrack(.filledTrack)
+//    }
+//}

@@ -8,44 +8,68 @@
 import SwiftUI
 import MapKit
 import SimpleRouter
+import NeedleFoundation
 
-extension Route where Self == MeasuredTrackDetailView.RouteBuilder {
-    /// View of a detailed measured track view
-    static func mapTrackDetail(track: Track,
-                            dependencies: DependencyManager) -> TrackMapDetailView.RouteBuilder {
-        TrackMapDetailView.RouteBuilder(track: track, dependencies: dependencies)
+protocol TrackMapDependency: Dependency {
+    var locationService: any LocationServiceProtocol { get }
+}
+
+nonisolated
+final class TrackMapComponent: Component<TrackMapDependency> {
+    private let track: Track
+    init(parent: Scope,
+         track: Track) {
+        self.track = track
+        super.init(parent: parent)
+    }
+    
+    @MainActor
+    var view: TrackMapDetailView {
+        TrackMapDetailView(track: track, mapViewModel: mapViewModel)
+    }
+    
+    @MainActor
+    var mapViewModel: MapViewModel {
+        MapViewModel(mode: .free(track),
+                     locationService: dependency.locationService)
+    }
+    
+    @MainActor
+    var route: any Route {
+        RouteBuilder(component: self)
+    }
+    
+    @MainActor
+    struct RouteBuilder: Route {
+        static func == (lhs: RouteBuilder, rhs: RouteBuilder) -> Bool {
+            lhs.component.track == rhs.component.track
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(component.track)
+        }
+        
+        let component: TrackMapComponent
+
+        func build() -> AnyView {
+            AnyView(component.view)
+        }
     }
 }
 
 struct TrackMapDetailView: View {
-    struct RouteBuilder: Route {
-        static func == (lhs: TrackMapDetailView.RouteBuilder, rhs: TrackMapDetailView.RouteBuilder) -> Bool {
-            lhs.track == rhs.track
-        }
-        
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(track)
-        }
-        
-        let track: Track
-        let dependencies: DependencyManager
-
-        func build() -> AnyView {
-            AnyView(TrackMapDetailView(track: track,
-                                    dependencies: dependencies))
-        }
-    }
-    
     @State private var undoableList: UndoService<TrackPoint> = .init()
     @State private var trackBounds: MKMapRect?
     @AppStorage("speedunit") var speedUnit: String = "km/h"
     let track: Track
-    let dependencies: DependencyManager
     @State private var coordinate: CGPoint = .zero
+    
+    let mapViewModel: MapViewModel
+    
     var body: some View {
         ZStack {
             MapReader { proxy in
-                MapView(mode: .free(track), dependencies: dependencies) {
+                MapView(vm: mapViewModel) {
                     MapContents.speedTrack(track)
                     if let start = track.points.first {
                         MapContents.startPoint(start)
@@ -178,6 +202,24 @@ struct TrackMapDetailView: View {
     
 }
 
+nonisolated
+class MockTrackMapDetailParentComponent: BootstrapComponent {
+    
+    @MainActor
+    public var locationService: any LocationServiceProtocol {
+        DependencyManager.MockLocationService()
+    }
+    
+    @MainActor
+    var trackMapComponent: TrackMapComponent {
+        TrackMapComponent(parent: self,
+                          track: .filledTrack)
+    }
+}
+
 #Preview {
-    TrackMapDetailView(track: .filledTrack, dependencies: .mock())
+    Group {
+        let component = MockTrackMapDetailParentComponent()
+        return component.trackMapComponent.view
+    }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 let tabRouterLogger = MainLogger("TabRouter")
 
-protocol TabRouterProtocol: AnyObject, Observable{
+public protocol TabRouterProtocol: AnyObject, Observable{
     var selectedTab: String { get set }
 }
 

@@ -82,8 +82,9 @@ struct MeasuredTrackDetailView: View {
     private var baseTrackInfo: some View {
         VStack(spacing: 8) {
             Button {
-                dependencies.routers[dependencies.tabRouter.selectedTab]?
-                    .push(.mapTrackDetail(track: measuredTrack.track, dependencies: dependencies))
+                #warning("Fix navigation")
+//                dependencies.routers[dependencies.tabRouter.selectedTab]?
+//                    .push(.mapTrackDetail(track: measuredTrack.track, dependencies: dependencies))
             } label: {
                 MapSnippetView(mapSnippetCache: dependencies.mapSnippetCache,
                                mapSnapshotGenerator: dependencies.mapSnapshotGenerator,
