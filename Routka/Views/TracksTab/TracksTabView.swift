@@ -38,6 +38,11 @@ final class TracksTabComponent: Component<TracksTabDependency> {
     }
     
     @MainActor
+    func measuredtrackDetail(measuredTrack: MeasuredTrack) -> MeasuredTrackDetailComponent {
+        MeasuredTrackDetailComponent(parent: self, measuredTrack: measuredTrack)
+    }
+    
+    @MainActor
     var view: TracksTabView {
         TracksTabView(vm: viewModel)
     }

@@ -38,9 +38,8 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
 //                          dependencies: dependencies))
     }
     func openMeasuredTrack(_ measure: MeasuredTrack) {
-#warning("fix navigation")
-//        routers[tabRouter.selectedTab]?.push(
-//            .measuredTrackDetail(track: measure, dependencies: dependencies))
+        let route = component.measuredtrackDetail(measuredTrack: measure).route
+        routers[tabRouter.selectedTab]?.push(route)
     }
     func openMap() {
         tabRouter.selectedTab = "Map"

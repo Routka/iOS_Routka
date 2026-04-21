@@ -41,11 +41,12 @@ struct MeasuredTrackListView: View {
             if case .list(let array) = viewModel.state {
                 ForEach(array, id: \.id) { measured in
                     Button {
-                        Task {
-                            dependencies.routers[dependencies.tabRouter.selectedTab]?
-                                .push(.measuredTrackDetail(track: measured,
-                                                           dependencies: dependencies))
-                        }
+                        #warning("fix navigation")
+//                        Task {
+//                            dependencies.routers[dependencies.tabRouter.selectedTab]?
+//                                .push(.measuredTrackDetail(track: measured,
+//                                                           dependencies: dependencies))
+//                        }
                     } label: {
                         MeasuredTrackCellView(measured: measured)
                     }

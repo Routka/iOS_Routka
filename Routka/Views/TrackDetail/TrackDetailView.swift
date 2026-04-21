@@ -15,17 +15,6 @@ import MapKit
 import SimpleRouter
 import NeedleFoundation
 
-//extension Route where Self == TrackDetailView.RouteBuilder {
-//    /// View of a detailed track info
-//    static func trackDetail(track: Track,
-//                            dependencies: DependencyManager) -> TrackDetailView.RouteBuilder {
-//        TrackDetailView.RouteBuilder(vm: .init(track: track,
-//                                               storageService: dependencies.storageService,
-//                                               routers: dependencies.routers,
-//                                               tabRouter: dependencies.tabRouter))
-//    }
-//}
-
 protocol TrackDetailDependency: Dependency {
     var storageService: any TrackStorageProtocol { get }
     var tabRouter: any TabRouterProtocol { get }
@@ -98,22 +87,6 @@ nonisolated final class TrackDetailComponent: Component<TrackDetailDependency> {
 /// and serves as a detail/history screen displaying time, speed, distance,
 /// and a map snippet of the track route.
 struct TrackDetailView: View {
-    struct RouteBuilder: Route {
-        static func == (lhs: TrackDetailView.RouteBuilder, rhs: TrackDetailView.RouteBuilder) -> Bool {
-            lhs.vm.track == rhs.vm.track
-        }
-        
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(vm.track)
-        }
-        
-        let vm: TrackDetailViewModel
-
-        func build() -> AnyView {
-            AnyView(TrackDetailView(vm: vm))
-        }
-    }
-    
     
     /// View model instance managing the track data and logic.
     @State private var vm: TrackDetailViewModel
