@@ -1,6 +1,7 @@
 
 
 import CoreLocation
+import Foundation
 import MapKit
 import NeedleFoundation
 import SimpleRouter

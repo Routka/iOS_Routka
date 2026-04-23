@@ -7,42 +7,49 @@
 import SwiftUI
 import Combine
 
+/// Navigation connecting layer for viewmodel <-> component
+@MainActor
+protocol TracksTabRouting: AnyObject {
+    func openTrack(_ track: Track)
+    func openImportedTracks()
+    func openMeasuredTracks()
+    func openTrackHistory()
+    func openMeasuredTrack(_ measure: MeasuredTrack)
+    func openMap()
+}
+
+/// Factory for creating child components from viewmodel -> component
+@MainActor
+protocol TracksTabComponentsFactory: AnyObject {
+    func trackHistoryCell(track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent
+}
+
 @Observable
 final class TracksTabViewModel: TracksTabViewModelProtocol {
     func openTrack(_ track: Track) {
-        let trackDetailRoute = component.trackDetailComponent(track: track).route
-        routers[tabRouter.selectedTab]?.push(trackDetailRoute)
+        // Delegate navigation intent to parent-owned router implementation.
+        routing.openTrack(track)
     }
     
     
     func trackHistoryCellComponent(track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent {
-        self.component.trackHistoryCell(track: track, unitSpeed: unitSpeed)
+        self.componentsFactory.trackHistoryCell(track: track, unitSpeed: unitSpeed)
     }
     
     func openImportedTracks() {
-        #warning("fix navigation")
-//        .routers[tabRouter.selectedTab]?.push(
-//            .importedTracks(vm: ImportedTracksListViewModel(dependencies: dependencies),
-//                            dependencies: dependencies))
+        routing.openImportedTracks()
     }
     func openMeasuredTracks() {
-#warning("fix navigation")
-//        routers[tabRouter.selectedTab]?.push(
-//            .measuredTracks(vm: MeasuredTrackListViewModel(dependencies: dependencies),
-//                            dependencies: dependencies))
+        routing.openMeasuredTracks()
     }
     func openTrackHistory() {
-#warning("fix navigation")
-//        routers[tabRouter.selectedTab]?.push(
-//            .trackHistory(vm: TrackHistoryViewModel(dependencies: dependencies),
-//                          dependencies: dependencies))
+        routing.openTrackHistory()
     }
     func openMeasuredTrack(_ measure: MeasuredTrack) {
-        let route = component.measuredtrackDetail(measuredTrack: measure).route
-        routers[tabRouter.selectedTab]?.push(route)
+        routing.openMeasuredTrack(measure)
     }
     func openMap() {
-        tabRouter.selectedTab = "Map"
+        routing.openMap()
     }
     
     func showImporter() {
@@ -56,21 +63,18 @@ final class TracksTabViewModel: TracksTabViewModelProtocol {
     var importedTracks: [Track] = []
     
     private var cancellables: Set<AnyCancellable> = []
-    private let tabRouter: any TabRouterProtocol
-    private let routers: [String: Router]
     private let trackFileService: any TrackFileServiceProtocol
-    private let component: TracksTabComponent
+    private let routing: any TracksTabRouting
+    private let componentsFactory: any TracksTabComponentsFactory
     
     init(storageService: any TrackStorageProtocol,
          measuredTrackStorageService: any MeasuredTrackStorageProtocol,
-         tabRouter: any TabRouterProtocol,
-         routers: [String: Router],
          trackFileService: any TrackFileServiceProtocol,
-         component: TracksTabComponent) {
-        self.component = component
-        self.tabRouter = tabRouter
-        self.routers = routers
+         routing: any TracksTabRouting,
+         componentsFactory: any TracksTabComponentsFactory) {
         self.trackFileService = trackFileService
+        self.routing = routing
+        self.componentsFactory = componentsFactory
         Task {
             let historyTracks = await storageService
                 .getAllTracks(ofType: .record, limit: showLimit)

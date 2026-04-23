@@ -6,52 +6,6 @@
 //
 
 import SwiftUI
-import NeedleFoundation
-
-protocol TracksTabDependency: Dependency {
-    var storageService: any TrackStorageProtocol { get }
-    var measuredTrackStorageService: any MeasuredTrackStorageProtocol { get }
-    var tabRouter: any TabRouterProtocol { get }
-    var routers: [String: Router] { get }
-    var trackFileService: any TrackFileServiceProtocol { get }
-}
-
-nonisolated
-final class TracksTabComponent: Component<TracksTabDependency> {
-    
-    @MainActor
-    var viewModel: any TracksTabViewModelProtocol {
-        TracksTabViewModel(storageService: dependency.storageService,
-                           measuredTrackStorageService: dependency.measuredTrackStorageService,
-                           tabRouter: dependency.tabRouter,
-                           routers: dependency.routers,
-                           trackFileService: dependency.trackFileService,
-                           component: self)
-    }
-    
-    @MainActor
-    func trackHistoryCell(track: Track,
-                          unitSpeed: UnitSpeed) -> TrackHistoryCellComponent {
-        TrackHistoryCellComponent(parent: self,
-                                  track: track,
-                                  unitSpeed: unitSpeed)
-    }
-    
-    @MainActor
-    func measuredtrackDetail(measuredTrack: MeasuredTrack) -> MeasuredTrackDetailComponent {
-        MeasuredTrackDetailComponent(parent: self, measuredTrack: measuredTrack)
-    }
-    
-    @MainActor
-    var view: TracksTabView {
-        TracksTabView(vm: viewModel)
-    }
-    
-    @MainActor
-    func trackDetailComponent(track: Track) -> TrackDetailComponent {
-        TrackDetailComponent(parent: self, track: track)
-    }
-}
 
 struct TracksTabView: View {
     private enum SectionID: Hashable {
