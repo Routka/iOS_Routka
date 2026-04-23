@@ -40,9 +40,6 @@ final class TrackDetailViewModel {
         children.isEmpty
     }
     
-    let mapSnippetComponent: MapSnippetComponent
-    
-    
     /// Average speed of CLLocationSpeed
     var averageSpeed: CLLocationSpeed?
     var parentTrack: Track?
@@ -51,30 +48,25 @@ final class TrackDetailViewModel {
     /// The track instance whose details are displayed.
     private(set) var track: Track
     private let storageService: any TrackStorageProtocol
-    private let tabRouter: any TabRouterProtocol
-    private let routers: [String: Router]
     private let trackFileService: any TrackFileServiceProtocol
     private let trackReplayCoordinator: any TrackReplayCoordinatorProtocol
-    private let component: TrackDetailComponent
     private var cancellables: Set<AnyCancellable> = []
-    
+    private let routing: any TrackDetailRouting
+    private let componentsFactory: any TrackDetailComponentsFactory
     /// Initializes the view model with a specific track.
     /// - Parameter track: The track to present.
     init(track: Track,
          storageService: any TrackStorageProtocol,
-         routers: [String: Router],
-         tabRouter: any TabRouterProtocol,
          trackFileService: any TrackFileServiceProtocol,
          trackReplayCoordinator: any TrackReplayCoordinatorProtocol,
-         component: TrackDetailComponent) {
+         routing: any TrackDetailRouting,
+         componentsFactory: any TrackDetailComponentsFactory) {
         self.track = track
         self.storageService = storageService
-        self.tabRouter = tabRouter
-        self.routers = routers
         self.trackFileService = trackFileService
         self.trackReplayCoordinator = trackReplayCoordinator
-        self.component = component
-        mapSnippetComponent = component.mapSnippet
+        self.routing = routing
+        self.componentsFactory = componentsFactory
         
         self.storageService.actionPublisher
             .sink { [weak self] action in
@@ -102,8 +94,7 @@ final class TrackDetailViewModel {
             switch action {
             case .deleted(let track):
                 if track.id == self.track.id {
-                   routers[tabRouter.selectedTab]?
-                        .pop()
+                    routing.popBack()
                 }
                 self.children.removeAll(where: {$0.id == track.id})
             case .updated(let track):
@@ -121,16 +112,18 @@ final class TrackDetailViewModel {
         }
     }
     
+    var mapSnippet: MapSnippetComponent {
+        self.componentsFactory.trackMapSnippet(track)
+    }
+    
     func openOriginalRoute() {
         guard let parentTrack else { return }
-#warning("Missing track navigation logic")
-//            dependencies.routers[dependencies.tabRouter.selectedTab]?.push(.trackDetail(track: parentTrack, dependencies: dependencies))
+        routing.openTrack(parentTrack)
         
     }
     
     func openChildTrack(_ child: Track) {
-#warning("Missing track navigation logic")
-//        routers[tabRouter.selectedTab]?.push(.trackDetail(track: track, dependencies: dependencies))
+        routing.openTrack(child)
     }
     
     func exportTrack() {
@@ -144,9 +137,7 @@ final class TrackDetailViewModel {
     }
     
     func openTrackMap() {
-        let trackMap = component.trackMapComponent.route
-        routers[tabRouter.selectedTab]?
-            .push(trackMap)
+        routing.openTrackMap(track)
     }
     
     func openTrackTrim() {
@@ -160,7 +151,7 @@ final class TrackDetailViewModel {
         Task {
             await trackReplayCoordinator.selectTrackToReplay(track)
         }
-        tabRouter.selectedTab = "map"
+        routing.openMap()
     }
     
     func updateTrackType(to type: ReplayMode) async {

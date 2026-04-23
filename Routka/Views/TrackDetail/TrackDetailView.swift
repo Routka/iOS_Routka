@@ -12,74 +12,7 @@
 
 import SwiftUI
 import MapKit
-import SimpleRouter
-import NeedleFoundation
 
-protocol TrackDetailDependency: Dependency {
-    var storageService: any TrackStorageProtocol { get }
-    var tabRouter: any TabRouterProtocol { get }
-    var routers: [String: Router] { get }
-    var trackFileService: any TrackFileServiceProtocol { get }
-    var trackReplayCoordinator: any TrackReplayCoordinatorProtocol { get }
-}
-
-
-nonisolated final class TrackDetailComponent: Component<TrackDetailDependency> {
-    private let track: Track
-    
-    init(parent: Scope, track: Track) {
-        self.track = track
-        super.init(parent: parent)
-    }
-    
-    var mapSnippet: MapSnippetComponent {
-        MapSnippetComponent(parent: self, track: track)
-    }
-    
-    @MainActor
-    var viewModel: TrackDetailViewModel {
-        TrackDetailViewModel(track: track,
-                             storageService: dependency.storageService,
-                             routers: dependency.routers,
-                             tabRouter: dependency.tabRouter,
-                             trackFileService: dependency.trackFileService,
-                             trackReplayCoordinator: dependency.trackReplayCoordinator,
-                             component: self)
-    }
-    
-    @MainActor
-    var view: TrackDetailView {
-        TrackDetailView(vm: viewModel)
-    }
-    
-    @MainActor
-    var trackMapComponent: TrackMapComponent {
-        TrackMapComponent(parent: self, track: track)
-    }
-    
-    @MainActor
-    var route: any Route {
-        RouteBuilder(component: self)
-    }
-    
-    @MainActor
-    struct RouteBuilder: Route {
-        static func == (lhs: RouteBuilder, rhs: RouteBuilder) -> Bool {
-            lhs.component.track == rhs.component.track
-        }
-        
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(component.track)
-        }
-        
-        let component: TrackDetailComponent
-
-        func build() -> AnyView {
-            AnyView(component.view)
-        }
-    }
-    
-}
 
 
 /// A detailed view presenting comprehensive information about a finished track.
