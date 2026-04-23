@@ -124,7 +124,7 @@ final class LogService {
                 do {
                     try await self.cycle()
                 } catch {
-                    print("Failed sending logs attempt: \(error)")
+//                    print("Failed sending logs attempt: \(error)")
                     try? await Task.sleep(for: .seconds(5))
                 }
             }

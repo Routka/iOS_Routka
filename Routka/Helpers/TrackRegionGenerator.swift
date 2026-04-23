@@ -11,6 +11,7 @@ import MapKit
 
 extension Array where Element == TrackPoint {
     /// Returns a map region of this track
+    nonisolated
     func regionOfATrack() -> MKCoordinateRegion {
         guard let firstPoint = self.first?.position else {
             return .init()

@@ -17,4 +17,7 @@ protocol TrackHistoryViewModelProtocol: Observable {
     
     /// The currently selected date for viewing track history.
     var selectedDate: Date { get set }
+    
+    func openTrack(_ track: Track)
+    func trackCell(_ track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent
 }

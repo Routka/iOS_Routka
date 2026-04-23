@@ -6,32 +6,7 @@
 //
 
 import SwiftUI
-import NeedleFoundation
 
-nonisolated
-final class TrackHistoryCellComponent: Component<EmptyDependency> {
-    private let track: Track
-    private let unitSpeed: UnitSpeed
-    init(parent: Scope,
-         track: Track,
-         unitSpeed: UnitSpeed) {
-        self.track = track
-        self.unitSpeed = unitSpeed
-        super.init(parent: parent)
-    }
-    
-    @MainActor
-    var mapSnippet: MapSnippetComponent {
-        MapSnippetComponent(parent: self, track: track)
-    }
-    
-    @MainActor
-    var view: TrackHistoryCellView {
-        TrackHistoryCellView(track: track,
-                             unit: unitSpeed,
-                             mapSnippetComponent: mapSnippet)
-    }
-}
 
 /// View Cell of a Track in history list
 struct TrackHistoryCellView: View {
@@ -106,39 +81,15 @@ struct TrackHistoryCellView: View {
     }
 }
 
-private class PreviewBox {
-    nonisolated
-    fileprivate class MockComponent: BootstrapComponent {
-        @MainActor
-        public var mapSnippetCache: any TrackMapSnippetCacheProtocol {
-            DependencyManager.MockTrackMapSnippetCache()
-        }
-        @MainActor
-        public var mapSnapshotGenerator: any MapSnapshotGeneratorProtocol {
-            MapSnapshotGenerator()
-        }
-        
-        
-        @MainActor
-        var mapComponent: MapSnippetComponent {
-            MapSnippetComponent(parent: self, track: .filledTrack)
-        }
-        
-        @MainActor
-        func trackCell(unit: UnitSpeed) -> TrackHistoryCellComponent {
-            TrackHistoryCellComponent(parent: self, track: .filledTrack, unitSpeed: unit)
-        }
-    }
-}
+
 #Preview {
-    
     ZStack {
 //        Color.cyan.opacity(0.3)
-        let component = PreviewBox.MockComponent()
+        let component = TrackHistoryCellMockComponentProvider()
         VStack {
             
-            component.trackCell(unit: .kilometersPerHour).view
-            component.trackCell(unit: .milesPerHour).view
+            component.trackCell(track: .filledTrack, unit: .kilometersPerHour).view
+            component.trackCell(track: .filledTrack, unit: .milesPerHour).view
             
         }
     }

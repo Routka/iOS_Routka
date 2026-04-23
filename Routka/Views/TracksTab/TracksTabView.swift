@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NeedleFoundation
 
 struct TracksTabView: View {
     private enum SectionID: Hashable {
@@ -157,7 +158,7 @@ struct TracksTabView: View {
                 sectionHeader(title: "History",
                               subtitle: "Your latest recorded drives.",
                               icon: "road.lanes",
-                              showLink: vm.historyTracks.count >= vm.showLimit) {
+                              showLink: /*vm.historyTracks.count >= vm.showLimit*/true) {
                     vm.openTrackHistory()
                 }
 

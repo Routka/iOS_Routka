@@ -86,10 +86,8 @@ private final class TracksTabNavigator: TracksTabRouting {
     }
     
     func openTrackHistory() {
-#warning("fix navigation")
-//        routers[tabRouter.selectedTab]?.push(
-//            .trackHistory(vm: TrackHistoryViewModel(dependencies: dependencies),
-//                          dependencies: dependencies))
+        let route = component.trackHistoryComponent().route
+        routers[tabRouter.selectedTab]?.push(route)
     }
     
     func openMeasuredTrack(_ measure: MeasuredTrack) {
@@ -119,6 +117,10 @@ extension TracksTabComponent {
         TrackDetailComponent(parent: self, track: track)
     }
     
+    @MainActor
+    func trackHistoryComponent() -> TrackHistoryComponent {
+        TrackHistoryComponent(parent: self)
+    }
     
     @MainActor
     func trackHistoryCell(track: Track,

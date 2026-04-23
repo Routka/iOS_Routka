@@ -35,6 +35,7 @@ extension Array where Element == TrackPoint {
     }
     
     /// Finds the highest recorded speed among all track points in the array.
+    nonisolated
     func topSpeedPoint() -> Self.Element? {
         let topSpeed = self
             .max { ls, rs in

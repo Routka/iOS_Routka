@@ -15,7 +15,7 @@ import MapKit
 110+ km/h - 30.555+m/s - red
 */
 
-
+nonisolated
 enum SpeedBucket: Equatable {
     case slow, regular, speedy, dangerous, extreme
     init(for speed: CLLocationSpeed) {

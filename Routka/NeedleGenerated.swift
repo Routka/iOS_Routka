@@ -1,5 +1,6 @@
 
 
+import Combine
 import CoreLocation
 import Foundation
 import MapKit
@@ -28,6 +29,10 @@ private func parent3(_ component: NeedleFoundation.Scope) -> NeedleFoundation.Sc
 
 private func parent4(_ component: NeedleFoundation.Scope) -> NeedleFoundation.Scope {
     return component.parent.parent.parent.parent
+}
+
+private func parent5(_ component: NeedleFoundation.Scope) -> NeedleFoundation.Scope {
+    return component.parent.parent.parent.parent.parent
 }
 
 // MARK: - Providers
@@ -87,6 +92,25 @@ private class TracksTabDependencyb619f7697985d5911ed1Provider: TracksTabDependen
 /// ^->AppComponent->RootComponent->TracksTabComponent
 private func factoryacee5c99c52fa1d62301b7304b634b3e62c64b3c(_ component: NeedleFoundation.Scope) -> AnyObject {
     return TracksTabDependencyb619f7697985d5911ed1Provider(appComponent: parent2(component) as! AppComponent)
+}
+private class TrackHistoryDependency73d3e5fbcd00513f8959Provider: TrackHistoryDependency {
+    var storageService: any TrackStorageProtocol {
+        return appComponent.storageService
+    }
+    var tabRouter: any TabRouterProtocol {
+        return appComponent.tabRouter
+    }
+    var routers: [String: Router] {
+        return appComponent.routers
+    }
+    private let appComponent: AppComponent
+    init(appComponent: AppComponent) {
+        self.appComponent = appComponent
+    }
+}
+/// ^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent
+private func factoryc63576fc92cbe40690f6b2702fa908b4cedb8464(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return TrackHistoryDependency73d3e5fbcd00513f8959Provider(appComponent: parent3(component) as! AppComponent)
 }
 private class MeasuredTrackDetail41616adfd2d91794a37aProvider: MeasuredTrackDetail {
     var measuredTrackStorageService: any MeasuredTrackStorageProtocol {
@@ -161,6 +185,10 @@ private class TrackMapDependency961f5219b3b221b7275eProvider: TrackMapDependency
 private func factory75fb5090104e4103bd557586110118823dea9ff0(_ component: NeedleFoundation.Scope) -> AnyObject {
     return TrackMapDependency961f5219b3b221b7275eProvider(appComponent: parent4(component) as! AppComponent)
 }
+/// ^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackDetailComponent->TrackMapComponent
+private func factory75fb5090104e4103bd559bb8c877c472a171438a(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return TrackMapDependency961f5219b3b221b7275eProvider(appComponent: parent5(component) as! AppComponent)
+}
 private class TrackMapDependency3e941799218268f4a302Provider: TrackMapDependency {
     var locationService: any LocationServiceProtocol {
         return mockMeasuredTrackDetailComponent.locationService
@@ -212,6 +240,10 @@ private class TrackDetailDependency504c5878bcaa4e782fb6Provider: TrackDetailDepe
 private func factory82bfc45ec1872278e5e2b2702fa908b4cedb8464(_ component: NeedleFoundation.Scope) -> AnyObject {
     return TrackDetailDependency504c5878bcaa4e782fb6Provider(appComponent: parent3(component) as! AppComponent)
 }
+/// ^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackDetailComponent
+private func factory82bfc45ec1872278e5e27586110118823dea9ff0(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return TrackDetailDependency504c5878bcaa4e782fb6Provider(appComponent: parent4(component) as! AppComponent)
+}
 private class MapSnippetDependencye5dfaf46898b43a46047Provider: MapSnippetDependency {
     var mapSnippetCache: any TrackMapSnippetCacheProtocol {
         return appComponent.mapSnippetCache
@@ -227,6 +259,26 @@ private class MapSnippetDependencye5dfaf46898b43a46047Provider: MapSnippetDepend
 /// ^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryCellComponent->MapSnippetComponent
 private func factoryd7554d02d94d273d52197586110118823dea9ff0(_ component: NeedleFoundation.Scope) -> AnyObject {
     return MapSnippetDependencye5dfaf46898b43a46047Provider(appComponent: parent4(component) as! AppComponent)
+}
+/// ^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackHistoryCellComponent->MapSnippetComponent
+private func factoryd7554d02d94d273d52199bb8c877c472a171438a(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return MapSnippetDependencye5dfaf46898b43a46047Provider(appComponent: parent5(component) as! AppComponent)
+}
+private class MapSnippetDependency4bf09a63114e68842453Provider: MapSnippetDependency {
+    var mapSnippetCache: any TrackMapSnippetCacheProtocol {
+        return trackHistoryCellMockComponentProvider.mapSnippetCache
+    }
+    var mapSnapshotGenerator: any MapSnapshotGeneratorProtocol {
+        return trackHistoryCellMockComponentProvider.mapSnapshotGenerator
+    }
+    private let trackHistoryCellMockComponentProvider: TrackHistoryCellMockComponentProvider
+    init(trackHistoryCellMockComponentProvider: TrackHistoryCellMockComponentProvider) {
+        self.trackHistoryCellMockComponentProvider = trackHistoryCellMockComponentProvider
+    }
+}
+/// ^->TrackHistoryCellMockComponentProvider->TrackHistoryCellComponent->MapSnippetComponent
+private func factory53a35471829210219a555df56f610f4d5e4f12ec(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return MapSnippetDependency4bf09a63114e68842453Provider(trackHistoryCellMockComponentProvider: parent2(component) as! TrackHistoryCellMockComponentProvider)
 }
 private class MapSnippetDependency1304440067d32f406655Provider: MapSnippetDependency {
     var mapSnippetCache: any TrackMapSnippetCacheProtocol {
@@ -302,6 +354,21 @@ extension TracksTabComponent: NeedleFoundation.Registration {
 extension TrackHistoryCellComponent: NeedleFoundation.Registration {
     public func registerItems() {
 
+
+    }
+}
+extension TrackHistoryCellMockComponentProvider: NeedleFoundation.Registration {
+    public func registerItems() {
+
+        localTable["mapSnippetCache-any TrackMapSnippetCacheProtocol"] = { [unowned self] in self.mapSnippetCache as Any }
+        localTable["mapSnapshotGenerator-any MapSnapshotGeneratorProtocol"] = { [unowned self] in self.mapSnapshotGenerator as Any }
+    }
+}
+extension TrackHistoryComponent: NeedleFoundation.Registration {
+    public func registerItems() {
+        keyPathToName[\TrackHistoryDependency.storageService] = "storageService-any TrackStorageProtocol"
+        keyPathToName[\TrackHistoryDependency.tabRouter] = "tabRouter-any TabRouterProtocol"
+        keyPathToName[\TrackHistoryDependency.routers] = "routers-[String: Router]"
 
     }
 }
@@ -388,19 +455,28 @@ private func registerProviderFactory(_ componentPath: String, _ factory: @escapi
     registerProviderFactory("^->AppComponent->RootComponent->BaseMapComponent->TrackPresetsComponent", factoryc54fb74f56d2e8aeb21eb2702fa908b4cedb8464)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent", factoryacee5c99c52fa1d62301b7304b634b3e62c64b3c)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryCellComponent", factoryEmptyDependencyProvider)
+    registerProviderFactory("^->TrackHistoryCellMockComponentProvider->TrackHistoryCellComponent", factoryEmptyDependencyProvider)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackHistoryCellComponent", factoryEmptyDependencyProvider)
+    registerProviderFactory("^->TrackHistoryCellMockComponentProvider", factoryEmptyDependencyProvider)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent", factoryc63576fc92cbe40690f6b2702fa908b4cedb8464)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->MeasuredTrackDetailComponent", factorye99f29e6a1593ff65d10b2702fa908b4cedb8464)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent->MeasuredTrackDetailComponent", factoryd2934ab103e0e67efe9f1ae3ea56d9e8d2e5cbf8)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent", factoryEmptyDependencyProvider)
     registerProviderFactory("^->AppComponent->RootComponent->BaseMapComponent", factorybcfd2fbfb73eaddf911db7304b634b3e62c64b3c)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->MeasuredTrackDetailComponent->TrackMapComponent", factory75fb5090104e4103bd557586110118823dea9ff0)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackDetailComponent->TrackMapComponent", factory75fb5090104e4103bd557586110118823dea9ff0)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackDetailComponent->TrackMapComponent", factory75fb5090104e4103bd559bb8c877c472a171438a)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent->MeasuredTrackDetailComponent->TrackMapComponent", factorya6144c18161a70cca3b636bfaaf810d08cc605e1)
     registerProviderFactory("^->MockTrackMapDetailParentComponent->TrackMapComponent", factory6c4694b1def835eff0108adf4a46b14b88d9ed11)
     registerProviderFactory("^->MockTrackMapDetailParentComponent", factoryEmptyDependencyProvider)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackDetailComponent", factory82bfc45ec1872278e5e2b2702fa908b4cedb8464)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackDetailComponent", factory82bfc45ec1872278e5e27586110118823dea9ff0)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryCellComponent->MapSnippetComponent", factoryd7554d02d94d273d52197586110118823dea9ff0)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackHistoryCellComponent->MapSnippetComponent", factoryd7554d02d94d273d52199bb8c877c472a171438a)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->MeasuredTrackDetailComponent->MapSnippetComponent", factoryd7554d02d94d273d52197586110118823dea9ff0)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackDetailComponent->MapSnippetComponent", factoryd7554d02d94d273d52197586110118823dea9ff0)
+    registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->TrackHistoryComponent->TrackDetailComponent->MapSnippetComponent", factoryd7554d02d94d273d52199bb8c877c472a171438a)
+    registerProviderFactory("^->TrackHistoryCellMockComponentProvider->TrackHistoryCellComponent->MapSnippetComponent", factory53a35471829210219a555df56f610f4d5e4f12ec)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent->MeasuredTrackDetailComponent->MapSnippetComponent", factory6081436e1e1e99cf7f9b36bfaaf810d08cc605e1)
     registerProviderFactory("^->MockMapSnippetParentComponent->MapSnippetComponent", factory8866217649a5eb73d4929ff55ac03fada00284bc)
     registerProviderFactory("^->MockMapSnippetParentComponent", factoryEmptyDependencyProvider)

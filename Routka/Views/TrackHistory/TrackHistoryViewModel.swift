@@ -26,6 +26,8 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
     
     /// Reference to the underlying storage mechanism for tracks.
     private let storage: any TrackStorageProtocol
+    private let routing: any TrackHistoryRouting
+    private let componentsFactory: any TrackHistoryComponentsFactory
     
     /// Holds Combine cancellables for subscriptions.
     private var cancellables: Set<AnyCancellable> = []
@@ -34,14 +36,26 @@ final class TrackHistoryViewModel: TrackHistoryViewModelProtocol {
     
     /// Creates a new view model instance and subscribes to storage actions and date selection changes.
     /// - Parameter dependencies: A dependency manager providing required services such as the track storage.
-    init(dependencies: DependencyManager) {
-        self.storage = dependencies.storageService
+    init(storageService: any TrackStorageProtocol,
+         routing: any TrackHistoryRouting,
+         componentsFactory: any TrackHistoryComponentsFactory) {
+        self.storage = storageService
+        self.routing = routing
+        self.componentsFactory = componentsFactory
         self.storage.actionPublisher
             .sink { [weak self] action in
                 self?.receiveAction(action)
             }
             .store(in: &cancellables)
         fetchByDay()
+    }
+    
+    func openTrack(_ track: Track) {
+        routing.openTrack(track)
+    }
+    
+    func trackCell(_ track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent {
+        componentsFactory.trackHistoryCell(track: track, unitSpeed: unitSpeed)
     }
     
     private func fetchByDay() {
