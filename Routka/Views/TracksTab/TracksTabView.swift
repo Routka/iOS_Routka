@@ -158,7 +158,7 @@ struct TracksTabView: View {
                 sectionHeader(title: "History",
                               subtitle: "Your latest recorded drives.",
                               icon: "road.lanes",
-                              showLink: /*vm.historyTracks.count >= vm.showLimit*/true) {
+                              showLink: vm.historyTracks.count >= vm.showLimit) {
                     vm.openTrackHistory()
                 }
 

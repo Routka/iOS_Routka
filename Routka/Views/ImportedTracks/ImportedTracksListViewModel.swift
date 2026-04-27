@@ -13,11 +13,20 @@ final class ImportedTracksListViewModel: ImportedTracksListViewModelProtocol {
     private(set) var screenState: ListState<Track> = .loading
 
     private let storage: any TrackStorageProtocol
+    private let componentsFactory: any ImportedTracksComponentsFactory
+    private let routing: any ImportedTracksRouting
+    private let trackFileService: any TrackFileServiceProtocol
     
     private var cancellables: Set<AnyCancellable> = []
 
-    init(dependencies: DependencyManager) {
-        self.storage = dependencies.storageService
+    init(storageService: any TrackStorageProtocol,
+         componentsFactory: any ImportedTracksComponentsFactory,
+         routing: any ImportedTracksRouting,
+         trackFileService: any TrackFileServiceProtocol) {
+        self.storage = storageService
+        self.componentsFactory = componentsFactory
+        self.routing = routing
+        self.trackFileService = trackFileService
         
         self.storage.actionPublisher
             .sink { [weak self] action in
@@ -64,5 +73,17 @@ final class ImportedTracksListViewModel: ImportedTracksListViewModelProtocol {
                 }
             }
         }
+    }
+    
+    func openTrack(_ track: Track) {
+        routing.openTrack(track)
+    }
+    
+    func trackHistoryCell(_ track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent {
+        componentsFactory.trackHistoryCell(track, unitSpeed)
+    }
+    
+    func showImporter() {
+        trackFileService.showImporter()
     }
 }
