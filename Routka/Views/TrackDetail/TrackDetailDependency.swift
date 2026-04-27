@@ -108,6 +108,7 @@ protocol TrackDetailRouting: AnyObject {
     func openTrackMap(_ track: Track)
     func popBack()
     func openMap()
+    func openTrackTrim(_ track: Track)
 }
 
 final class TrackDetailNavigator: TrackDetailRouting {
@@ -143,6 +144,12 @@ final class TrackDetailNavigator: TrackDetailRouting {
     func openMap() {
         tabRouter.selectedTab = "map"
     }
+    
+    func openTrackTrim(_ track: Track) {
+        let route = component.trackTrim(track).route
+        routers[tabRouter.selectedTab]?
+            .push(route)
+    }
 }
 
 // MARK: - Components creation
@@ -155,5 +162,10 @@ extension TrackDetailComponent {
     @MainActor
     func trackMap(_ track: Track) -> TrackMapComponent {
         TrackMapComponent(parent: self, track: track)
+    }
+    
+    @MainActor
+    func trackTrim(_ track: Track) -> TrackTrimComponent {
+        TrackTrimComponent(parent: self, track: track)
     }
 }

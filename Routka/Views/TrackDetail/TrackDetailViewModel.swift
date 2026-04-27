@@ -141,10 +141,7 @@ final class TrackDetailViewModel: TrackDetailViewModelProtocol {
     }
     
     func openTrackTrim() {
-#warning("Missing track navigation logic")
-//        routers[tabRouter.selectedTab]?
-//            .push(.trackTrim(track: vm.track,
-//                             dependencies: dependencies))
+        routing.openTrackTrim(track)
     }
     
     func replayTrack() {

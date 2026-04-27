@@ -194,6 +194,36 @@ private class MeasuredTrackDetail6ddb30dff0e32a3e5166Provider: MeasuredTrackDeta
 private func factoryd2934ab103e0e67efe9f1ae3ea56d9e8d2e5cbf8(_ component: NeedleFoundation.Scope) -> AnyObject {
     return MeasuredTrackDetail6ddb30dff0e32a3e5166Provider(mockMeasuredTrackDetailComponent: parent1(component) as! MockMeasuredTrackDetailComponent)
 }
+private class TrackTrimDependency2eaafee369ddc5ba5a09Provider: TrackTrimDependency {
+    var tabRouter: any TabRouterProtocol {
+        return appComponent.tabRouter
+    }
+    var routers: [String: Router] {
+        return appComponent.routers
+    }
+    var trackDetailBuilder: any TrackDetailBuilder {
+        return rootComponent.trackDetailBuilder
+    }
+    var storageService: any TrackStorageProtocol {
+        return appComponent.storageService
+    }
+    var locationService: any LocationServiceProtocol {
+        return appComponent.locationService
+    }
+    var mapSnippetCache: any TrackMapSnippetCacheProtocol {
+        return appComponent.mapSnippetCache
+    }
+    private let appComponent: AppComponent
+    private let rootComponent: RootComponent
+    init(appComponent: AppComponent, rootComponent: RootComponent) {
+        self.appComponent = appComponent
+        self.rootComponent = rootComponent
+    }
+}
+/// ^->AppComponent->RootComponent->TrackDetailComponent->TrackTrimComponent
+private func factoryf2a6c8b36c71ec13df0e9c42af08cd83fca49735(_ component: NeedleFoundation.Scope) -> AnyObject {
+    return TrackTrimDependency2eaafee369ddc5ba5a09Provider(appComponent: parent3(component) as! AppComponent, rootComponent: parent2(component) as! RootComponent)
+}
 private class RootDependency3944cc797a4a88956fb5Provider: RootDependency {
     var tabRouter: any TabRouterProtocol {
         return appComponent.tabRouter
@@ -476,6 +506,16 @@ extension MockMeasuredTrackDetailComponent: NeedleFoundation.Registration {
         localTable["mapSnapshotGenerator-any MapSnapshotGeneratorProtocol"] = { [unowned self] in self.mapSnapshotGenerator as Any }
     }
 }
+extension TrackTrimComponent: NeedleFoundation.Registration {
+    public func registerItems() {
+        keyPathToName[\TrackTrimDependency.tabRouter] = "tabRouter-any TabRouterProtocol"
+        keyPathToName[\TrackTrimDependency.routers] = "routers-[String: Router]"
+        keyPathToName[\TrackTrimDependency.trackDetailBuilder] = "trackDetailBuilder-any TrackDetailBuilder"
+        keyPathToName[\TrackTrimDependency.storageService] = "storageService-any TrackStorageProtocol"
+        keyPathToName[\TrackTrimDependency.locationService] = "locationService-any LocationServiceProtocol"
+        keyPathToName[\TrackTrimDependency.mapSnippetCache] = "mapSnippetCache-any TrackMapSnippetCacheProtocol"
+    }
+}
 extension RootComponent: NeedleFoundation.Registration {
     public func registerItems() {
         keyPathToName[\RootDependency.tabRouter] = "tabRouter-any TabRouterProtocol"
@@ -559,6 +599,7 @@ private func registerProviderFactory(_ componentPath: String, _ factory: @escapi
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->MeasuredTrackDetailComponent", factory091b526ec27f26cec993b2702fa908b4cedb8464)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent->MeasuredTrackDetailComponent", factoryd2934ab103e0e67efe9f1ae3ea56d9e8d2e5cbf8)
     registerProviderFactory("^->MockMeasuredTrackDetailComponent", factoryEmptyDependencyProvider)
+    registerProviderFactory("^->AppComponent->RootComponent->TrackDetailComponent->TrackTrimComponent", factoryf2a6c8b36c71ec13df0e9c42af08cd83fca49735)
     registerProviderFactory("^->AppComponent->RootComponent", factory264bfc4d4cb6b0629b40f47b58f8f304c97af4d5)
     registerProviderFactory("^->AppComponent->RootComponent->BaseMapComponent", factorybcfd2fbfb73eaddf911db7304b634b3e62c64b3c)
     registerProviderFactory("^->AppComponent->RootComponent->TracksTabComponent->MeasuredTracksComponent->MeasuredTrackDetailComponent->TrackMapComponent", factoryd78d785f699294e804569bb8c877c472a171438a)
