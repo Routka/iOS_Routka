@@ -15,7 +15,7 @@ import NeedleFoundation
 /// View model responsible for managing and providing detailed track data 
 /// for presentation in the TrackDetailView.
 @Observable
-final class TrackDetailViewModel {
+final class TrackDetailViewModel: TrackDetailViewModelProtocol {
     var showReplayButton: Bool {
         track.parentID == nil
     }

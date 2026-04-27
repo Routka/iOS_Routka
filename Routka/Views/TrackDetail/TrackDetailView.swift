@@ -22,13 +22,13 @@ import MapKit
 struct TrackDetailView: View {
     
     /// View model instance managing the track data and logic.
-    @State private var vm: TrackDetailViewModel
+    @State private var vm: any TrackDetailViewModelProtocol
     /// User preference stored for the speed unit (e.g., km/h or mph).
     @AppStorage("speedunit") var speedUnit: String = "km/h"
     
     /// Creates the detail view with the given track.
     /// - Parameter track: The track to be detailed.
-    init(vm: TrackDetailViewModel) {
+    init(vm: any TrackDetailViewModelProtocol) {
         self._vm = .init(initialValue: vm)
     }
     
@@ -208,13 +208,67 @@ struct TrackDetailView: View {
     }
 }
 
+@Observable
+fileprivate final class PreviewModel: TrackDetailViewModelProtocol {
+    var showReplayButton: Bool = true
+    
+    var showEditSection: Bool = true
+    
+    var showDeleteTrackButton: Bool = true
+    
+    var showReplaysSection: Bool = true
+    
+    var showExportButton: Bool = true
+    
+    var showModeEditButton: Bool = true
+    
+    var showTrimButton: Bool = true
+    
+    var averageSpeed: CLLocationSpeed? = 13.4
+    
+    var parentTrack: Track? = .filledTrack
+    
+    var children: [Track] = [.filledTrack, .newFilledTrack()]
+    
+    var track: Track = .newFilledTrack()
+    
+    var mapSnippet: MapSnippetComponent = {
+        MockMapSnippetParentComponent().mapComponent
+    } ()
+    
+    func openOriginalRoute() {
+    }
+    
+    func openChildTrack(_ child: Track) {
+    }
+    
+    func exportTrack() {
+    }
+    
+    func deleteTrack() {
+    }
+    
+    func openTrackMap() {
+    }
+    
+    func openTrackTrim() {
+    }
+    
+    func replayTrack() {
+    }
+    
+    func updateTrackType(to type: ReplayMode) async {
+    }
+    
+    func calculateAverageSpeed() {
+    }
+    
+    
+}
 
 
-#warning("fix preview")
-//#Preview {
-//    NavigationView {
-//        var track = Track(id: "", points: .roadInSPB, parentID: nil)
-//        track.replayMode = .classical
-//        return TrackDetailView(track: track, dependencies: .mock())
-//    }
-//}
+#Preview {
+    NavigationView {
+        TrackDetailView(vm: PreviewModel())
+    }
+}

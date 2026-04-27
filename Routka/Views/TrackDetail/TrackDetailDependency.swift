@@ -9,6 +9,7 @@ import SimpleRouter
 import NeedleFoundation
 import SwiftUI
 
+// MARK: - Dependencies
 protocol TrackDetailDependency: Dependency {
     var storageService: any TrackStorageProtocol { get }
     var tabRouter: any TabRouterProtocol { get }
@@ -18,7 +19,7 @@ protocol TrackDetailDependency: Dependency {
     var trackDetailBuilder: any TrackDetailBuilder { get }
 }
 
-
+// MARK: - Main Component
 nonisolated final class TrackDetailComponent: Component<TrackDetailDependency> {
     private let track: Track
     
@@ -82,6 +83,7 @@ nonisolated final class TrackDetailComponent: Component<TrackDetailDependency> {
     
 }
 
+// MARK: - Components Factory layer
 protocol TrackDetailComponentsFactory {
     func trackMapSnippet(_ track: Track) -> MapSnippetComponent
 }
@@ -100,7 +102,7 @@ final class TrackDetailComponentsFactoryImpl: TrackDetailComponentsFactory {
     
 }
 
-
+// MARK: - Navigation layer
 protocol TrackDetailRouting: AnyObject {
     func openTrack(_ track: Track)
     func openTrackMap(_ track: Track)
@@ -143,7 +145,7 @@ final class TrackDetailNavigator: TrackDetailRouting {
     }
 }
 
-
+// MARK: - Components creation
 extension TrackDetailComponent {
     @MainActor
     func trackDetail(_ track: Track) -> TrackDetailComponent {
