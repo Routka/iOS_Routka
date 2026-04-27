@@ -131,7 +131,7 @@ struct TracksTabView: View {
                     if vm.importedTracks.isEmpty {
                         emptyStateCard(title: "No imported tracks yet",
                                        message: "Bring in .routka saved files.",
-                                       buttonTitle: "Import from Files",
+                                       buttonTitle: "Import from files",
                                        systemImage: "square.and.arrow.down") {
                             vm.showImporter()
                         }
@@ -140,7 +140,7 @@ struct TracksTabView: View {
                         Button {
                             vm.showImporter()
                         } label: {
-                            Label("Import from Files", systemImage: "square.and.arrow.down")
+                            Label("Import from files", systemImage: "square.and.arrow.down")
                         }
                         .buttonStyle(.glass)
                         .opacity(vm.importedTracks.isEmpty ? 0 : 1)
@@ -381,11 +381,11 @@ private final class PreviewModel: TracksTabViewModelProtocol {
     
     var showLimit: Int = 2
     
-    var historyTracks: [Track] = [.newFilledTrack(),
+    var historyTracks: [Track] = [/*.newFilledTrack(),
                                   .newFilledTrack(),
                                   .newFilledTrack(),
-                                  .newFilledTrack(),]
-//    
+                                  .newFilledTrack(),*/]
+//
 //    var measuredTracks: [MeasuredTrack] = [
 //        .init(id: "", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack),
 //        .init(id: "1", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack),
@@ -394,8 +394,8 @@ private final class PreviewModel: TracksTabViewModelProtocol {
 //        .init(id: "4", measurement: .reachingDistance(30, name: "1/2 mile"), track: .filledTrack),
 //    ]
 
-    var importedTracks: [Track] = [.filledTrack,
-                                   .newFilledTrack()]
+    var importedTracks: [Track] = [/*.filledTrack,
+                                   .newFilledTrack()*/]
 
 //    var historyTracks: [Track] = []
     
@@ -408,4 +408,5 @@ private final class PreviewModel: TracksTabViewModelProtocol {
 
 #Preview {
     TracksTabView(vm: PreviewModel())
+        .environment(\.locale, .init(identifier: "en"))
 }
