@@ -9,9 +9,12 @@ final class MeasuredTrackListViewModel: MeasuredTrackListViewModelProtocol {
     private(set) var state: ListState<MeasuredTrack> = .loading
     private let storage: any MeasuredTrackStorageProtocol
     private var cancellables: Set<AnyCancellable> = []
+    private let routing: any MeasuredTracksRouting
 
-    init(dependencies: DependencyManager) {
-        self.storage = dependencies.measuredTrackStorageService
+    init(measuredTrackStorageService: any MeasuredTrackStorageProtocol,
+         routing: any MeasuredTracksRouting) {
+        self.storage = measuredTrackStorageService
+        self.routing = routing
 
         // Subscribe to storage actions
         storage.actionPublisher
@@ -60,6 +63,10 @@ final class MeasuredTrackListViewModel: MeasuredTrackListViewModelProtocol {
                 }
             }
         }
+    }
+    
+    func openTrack(_ measuredTrack: MeasuredTrack) {
+        routing.openTrack(measuredTrack)
     }
 
     /// Deletes measured tracks at the specified offsets asynchronously.

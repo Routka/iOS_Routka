@@ -357,25 +357,8 @@ struct TracksTabView: View {
 private final class PreviewModel: TracksTabViewModelProtocol {
     func openTrack(_ track: Track) {
     }
-    
-    nonisolated
-    fileprivate class MockComponent: BootstrapComponent {
-        @MainActor
-        public var mapSnippetCache: any TrackMapSnippetCacheProtocol {
-            DependencyManager.MockTrackMapSnippetCache()
-        }
-        @MainActor
-        public var mapSnapshotGenerator: any MapSnapshotGeneratorProtocol {
-            MapSnapshotGenerator()
-        }
-        
-        @MainActor
-        func trackCell(track: Track, unit: UnitSpeed) -> TrackHistoryCellComponent {
-            TrackHistoryCellComponent(parent: self, track: track, unitSpeed: unit)
-        }
-    }
     func trackHistoryCellComponent(track: Track, unitSpeed: UnitSpeed) -> TrackHistoryCellComponent {
-        MockComponent().trackCell(track: track, unit: unitSpeed)
+        TrackHistoryCellMockComponentProvider().trackCell(track: track, unit: unitSpeed)
     }
     
     func showImporter() {
